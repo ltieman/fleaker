@@ -12,8 +12,10 @@
 
 from flask import Flask
 
+from .config import MultiStageConfigurableApp
 
-class App(Flask):
+
+class App(MultiStageConfigurableApp, Flask):
     """The ``App`` class is the primary entrypoint for using Fleaker and is
     a simple WSGI Application. In it's simplest form, you can think of
     ``fleaker.App`` as roughly equivalent to ``flask.Flask``. On top of
