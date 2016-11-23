@@ -1,5 +1,4 @@
 # ~*~ coding: utf-8 ~*~
-
 """
 tests.test_config
 ~~~~~~~~~~~~~~~~~
@@ -28,4 +27,5 @@ def test_configure_from_environment():
     """Ensure this one method properly configures based on the entire
     environment.
     """
-    # @TODO: Finish more configure tests
+    # @TODO: Finish more configure tests. Add some for more esoteric
+    # configuration methods and test the configuration methods directly
