@@ -1,0 +1,2 @@
+FLEAKER_CONFIG_PY_LOADED = True
+THIRD_OPTION = 'from config.py'
