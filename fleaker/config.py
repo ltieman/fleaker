@@ -21,8 +21,38 @@ class MultiStageConfigurableApp(flask.Flask):
     """
 
     def configure(self, *args):
-        """
-        @TODO: Fill me out
+        """Configure the Application through a varied number of sources of
+        different types.
+
+        This function chains multiple possible configuration methods together
+        in order to just "make it work". You can pass multiple configuration
+        sources in to the method and each one will be tried in a sane fashion.
+        Later sources will override earlier sources if keys collide. For
+        example:
+
+        .. code:: python
+            from application import default_config
+            app.configure(default_config, os.env, '.secrets')
+
+        In the above example, values stored in ``default_config`` will be
+        loaded first, then overwritten by those in ``os.env``, and so on.
+
+        An endless number of configuration sources may be passed.
+
+        Configuration sources are type checked and processed according to the
+        following rules:
+
+        * ``string`` - if the source is a ``str``, we will assume it is a file
+          that should be loaded. If the file ends in ``.json``, then
+          :method:`flask.Config.from_json` is used; otherwise,
+          :method:`flask.Config.from_pyfile` is used.
+        * ``dict`` - if the source is a ``dict``, then
+          :method:`flask.Config.from_mapping` will be used.
+        * ``class`` or ``module`` - if the source is an uninstantiated
+          ``class`` or ``module``, then :method:`flask.Config.from_object` will
+          be used.
+
+        @TODO: Handle the stuff with the leading dot, if we end up using that.
         """
 
         for item in args:
