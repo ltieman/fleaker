@@ -4,6 +4,9 @@ fleaker_config
 
 Main entrypoint and the entire application for fleaker_config. All you can
 really do is update a config, and view your config.
+
+:copyright: (c) 2016 by Croscon Consulting, see AUTHORS for more details.
+:license: BSD, see LICENSE for more details.
 """
 from flask import jsonify, request
 from fleaker import App
