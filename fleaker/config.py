@@ -24,6 +24,10 @@ from ._compat import string_types
 class MultiStageConfigurableApp(flask.Flask):
     """The :class:`MultiStageConfigurableApp` is a mixin used to provide the
     primary ``configure`` method used to configure a `Fleaker` :class:`App`.
+
+    .. versionadded:: 0.1.0
+       The :class:`MultiStageConfigurableApp` class has existed since Fleaker
+       was conceived.
     """
 
     def configure(self, *args, **kwargs):

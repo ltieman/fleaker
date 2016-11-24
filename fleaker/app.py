@@ -25,8 +25,8 @@ class App(MultiStageConfigurableApp, Flask):
     manager, and many other tasks.
 
     Like ``flask.Flask``, it is passed the name of the module or package of the
-    application. Like ``flask.Flask``, this name is reused frequently in order
-    to resolve relative imports in helper methods and to locate generic
+    application. Also like ``flask.Flask``, this name is reused frequently in
+    order to resolve relative imports in helper methods and to locate generic
     resources. It accepts all of the same args and kwargs as
     :class:`flask.Flask`.
 
@@ -46,3 +46,10 @@ class App(MultiStageConfigurableApp, Flask):
 
     def __init__(self, import_name, **kwargs):
         super(App, self).__init__(import_name, **kwargs)
+
+        # @TODO: What was the rest of this supposed to do?
+
+    @staticmethod
+    def create_app():
+        # @TODO: Flesh out; this is your main creation entrypoint
+        pass

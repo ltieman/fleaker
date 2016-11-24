@@ -3,7 +3,8 @@
 fleaker
 ~~~~~~
 
-A framework built on top of the wonderful Flask to make everything easier.
+A framework built on top of the wonderful Flask with the goal of making
+everything easier.
 
 :copyright: (c) 2016 by Croscon Consulting.
 :license: BSD, see LICENSE for more details.
