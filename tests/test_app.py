@@ -43,3 +43,17 @@ def test_creation_with_kwargs():
 
     for key in kwargs:
         assert kwargs[key] == getattr(app, key)
+
+
+def test_basic_routes():
+    """Ensure it still works like Flask."""
+    app = fleaker.App(__name__)
+
+    @app.route('/test')
+    def test_route():
+        """Simple test route."""
+        return b'content'
+
+    with app.test_client() as client:
+        resp = client.get('/test')
+        assert resp.data == b'content'
