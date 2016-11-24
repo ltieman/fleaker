@@ -13,3 +13,4 @@ everything easier.
 __version__ = '0.1.0-dev'
 
 from .app import App
+from .component import Component
