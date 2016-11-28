@@ -20,3 +20,9 @@ if PY2:
 else:
     text_type = str
     string_types = (str,)
+
+# Grab the stack based upon what version of Flask we are using
+try:
+    from flask import _app_ctx_stack as STACK
+except ImportError:
+    from flask import _request_ctx_stack as STACK

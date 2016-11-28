@@ -14,4 +14,5 @@ __version__ = '0.1.1-dev'
 
 from .app import App
 from .component import Component
+from .constants import DEFAULT_DICT, MISSING
 from .missing import MissingSentinel
