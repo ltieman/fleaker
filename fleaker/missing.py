@@ -28,7 +28,7 @@ class MissingSentinel(object):
     >> print("success") if not MISSING else print("failure")
     "success"
 
-    .. versionadded:: 0.1.1
+    .. versionadded:: 0.1.0
     """
     def __bool__(self):
         """Define the boolean value for this object.
