@@ -1,4 +1,13 @@
-"""Unit tests for ``fleaker.MissingSentinel``."""
+# ~*~ coding: utf-8 ~*~
+"""
+tests.test_missing
+~~~~~~~~~~~~~~~~~~
+
+Provides tests for the :class:`MissingSentinel`.
+
+:copyright: (c) 2016 by Croscon Consulting, see AUTHORS for more details.
+:license: BSD, see LICENSE for more details.
+"""
 
 import pytest
 
