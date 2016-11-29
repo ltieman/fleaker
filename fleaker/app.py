@@ -13,9 +13,10 @@
 from flask import Flask
 
 from .config import MultiStageConfigurableApp
+from .json import FleakerJSONApp
 
 
-class App(MultiStageConfigurableApp, Flask):
+class App(MultiStageConfigurableApp, FleakerJSONApp, Flask):
     """The ``App`` class is the primary entrypoint for using Fleaker and is
     a simple WSGI Application. In it's simplest form, you can think of
     ``fleaker.App`` as roughly equivalent to ``flask.Flask``. On top of
@@ -49,7 +50,6 @@ class App(MultiStageConfigurableApp, Flask):
 
         # @TODO: What was the rest of this supposed to do?
 
-    @staticmethod
-    def create_app():
-        # @TODO: Flesh out; this is your main creation entrypoint
-        pass
+    @classmethod
+    def create_app(cls, **settings):
+        return cls(__name__, **settings)

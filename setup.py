@@ -70,6 +70,7 @@ setup(name='fleaker',
           'Flask-Classful',
           'Flask-Login',
           'Flask-Marshmallow',
+          'arrow',
           'marshmallow',
           # @TODO: We gotta be missing some things
           # pick one
