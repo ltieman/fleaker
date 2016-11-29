@@ -14,6 +14,14 @@ class ForeignKeyField(fields.Integer):
     usage for DB ID's is to name them ``${relation_name}_id``, for clarity.
     However, PeeWee only accepts FK values set through ``${relation_name}``, so
     fix it!
+
+    This field is effect by the following schema context variable:
+
+    - ``'convert_fks'``: This will prevent the field from being renamed when
+        serialized. This is useful if you will be double deserializing the data
+        and you don't wanted it converted after the first pass. This flow is
+        present for Webargs. By default, this field will rename the key when
+        deserialzed.
     """
 
     def _jsonschema_type_mapping(self):
