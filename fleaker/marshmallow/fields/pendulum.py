@@ -7,7 +7,7 @@ from datetime import datetime
 
 import pendulum
 
-from marshmallow import fields
+from marshmallow import ValidationError, fields
 
 
 class PendulumField(fields.DateTime):
@@ -22,6 +22,10 @@ class PendulumField(fields.DateTime):
         converted into a Pendulum object. This can be useful if you're going to
         be double deserialzing the value in the course of the request. This is
         needed for Webargs. By default, dates will be converted.
+
+    Keyword Args:
+        timezone (str): The timezone that the datetime must be in. If it
+            doesn't match, a ``marshmallow.ValidationError`` is raised.
     """
 
     def _jsonschema_type_mapping(self):
@@ -48,8 +52,17 @@ class PendulumField(fields.DateTime):
             return value
 
         value = super(PendulumField, self)._deserialize(value, attr, value)
+        timezone = self.metadata.get('timezone')
 
         if isinstance(value, datetime):
-            return pendulum.instance(value)
+            target = pendulum.instance(value)
+
+            if timezone and (target != target.in_timezone(timezone)):
+                raise ValidationError(
+                    "The provided datetime is not in the "
+                    "{} timezone".format(timezone)
+                )
+
+            return target
 
         return value

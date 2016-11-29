@@ -7,7 +7,9 @@ from datetime import datetime
 
 import arrow
 
-from marshmallow import fields
+from marshmallow import ValidationError, fields
+
+from fleaker._compat import text_type
 
 
 class ArrowField(fields.DateTime):
@@ -22,6 +24,10 @@ class ArrowField(fields.DateTime):
         converted into an Arrow object. This can be useful if you're going to
         be double deserialzing the value in the course of the request. This is
         needed for Webargs. By default, dates will be converted.
+
+    Keyword Args:
+        timezone (str): The timezone that the datetime must be in. If it
+            doesn't match, a ``marshmallow.ValidationError`` is raised.
     """
 
     def _jsonschema_type_mapping(self):
@@ -55,8 +61,18 @@ class ArrowField(fields.DateTime):
             return value
 
         value = super(ArrowField, self)._deserialize(value, attr, data)
+        timezone = self.metadata.get('timezone')
 
         if isinstance(value, datetime):
-            return arrow.get(value)
+            target = arrow.get(value)
+
+            if (timezone and
+                    text_type(target.to(timezone)) != text_type(target)):
+                raise ValidationError(
+                    "The provided datetime is not in the "
+                    "{} timezone".format(timezone)
+                )
+
+            return target
 
         return value
