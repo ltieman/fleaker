@@ -74,7 +74,7 @@ class Component(object):
             should **never** be able to modify the values within the
             ``context``.
     """
-    _context = DEFAULT_DICT
+    _context = MISSING
 
     def __init__(self, app=None, context=MISSING):
         """Eager constructor for the :class:`Component` class.
