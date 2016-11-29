@@ -9,6 +9,13 @@ try:
 except ImportError:
     pass
 
+# Pendulum is optional
+try:
+    import pendulum
+    from .pendulum import PendulumField
+except ImportError:
+    pass
+
 # Phonenumbers are optional
 try:
     import phonenumbers
