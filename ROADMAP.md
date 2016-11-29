@@ -2,6 +2,8 @@ Thoughts and ideas:
 
 * Finish the component stuff
   * There are a few skipped tests that need finishing.
+  * Update tests to run with a base component and an overridden component to
+    ensure naming is fine
   * Update the init_app methods to have a `persist` flag which when set to True,
     will make not restore the context back to it's original value whenever an
     appcontext is popped; let's you weave in and out of app contexts at will,
