@@ -1,17 +1,17 @@
 # ~*~ coding: utf-8 ~*~
-"""Module that defines a Marshmallow field that deserialzes a date string into
-an Arrow object.
+"""Module that defines a Marshmallow field that deserializes a date string into
+an Pendulum object.
 """
 
 from datetime import datetime
 
-import arrow
+import pendulum
 
 from marshmallow import fields
 
 
-class ArrowField(fields.DateTime):
-    """Marshmallow field that deserialzes datetimes into Arrow objects.
+class PendulumField(fields.DateTime):
+    """Marshmallow field that deserialzes datetimes into Pendulum objects.
 
     Has the same output on dump as the standard DateTime field. Accepts the
     same kwargs on init.
@@ -19,7 +19,7 @@ class ArrowField(fields.DateTime):
     This field is effected by the following schema context variables:
 
     - ``'convert_dates'``: This will prevent the date string from being
-        converted into an Arrow object. This can be useful if you're going to
+        converted into a Pendulum object. This can be useful if you're going to
         be double deserialzing the value in the course of the request. This is
         needed for Webargs. By default, dates will be converted.
     """
@@ -42,21 +42,14 @@ class ArrowField(fields.DateTime):
 
         return result
 
-    def _serialize(self, value, attr, obj):
-        """Convert the Arrow object into a string."""
-        if isinstance(value, arrow.arrow.Arrow):
-            value = value.datetime
-
-        return super(ArrowField, self)._serialize(value, attr, obj)
-
-    def _deserialize(self, value, attr, data):
-        """Deserializes a string into an Arrow object."""
+    def _deserialize(self, value, attr, obj):
+        """Deserializes a string into a Pendulum object."""
         if not self.context.get('convert_dates', True):
             return value
 
-        value = super(ArrowField, self)._deserialize(value, attr, data)
+        value = super(PendulumField, self)._deserialize(value, attr, value)
 
         if isinstance(value, datetime):
-            return arrow.get(value)
+            return pendulum.instance(value)
 
         return value
