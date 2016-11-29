@@ -11,16 +11,15 @@ import os
 
 import pytest
 
+from fleaker import MISSING
 from fleaker._compat import text_type
 
-
-absent = object()
 
 @pytest.fixture(autouse=True)
 def update_environment(request):
     """Update the environment based on what is provided in marks and then tear
     it all down.
-    
+
     Provide your environment overrides in the ``environ`` marker as a kwarg.
     """
     updates = request.node.get_marker('environ')
@@ -33,13 +32,13 @@ def update_environment(request):
     updates = updates.kwargs
 
     for key, val in updates.items():
-        originals[key] = os.environ.get(key, absent)
+        originals[key] = os.environ.get(key, MISSING)
         os.environ[key] = text_type(val)
 
     yield
 
     for key, val in originals.items():
-        if val is absent:
+        if val is MISSING:
             os.environ.pop(key, None)
         else:
             os.environ[key] = val

@@ -24,14 +24,14 @@ def _create_app():
 
     return app
 
+
 def test_component_creation_with_app():
     """Ensure we can create a Component with an app."""
     app = _create_app()
 
     comp = Component(app=app)
 
-    assert comp.app == app
-    assert comp._app == app
+    assert comp.app is comp._app is app
     assert comp.config['FOO'] == 'BAR'
 
 
@@ -39,28 +39,27 @@ def test_component_creation_with_init_app():
     """Ensure we can create a Component without an app."""
     app = _create_app()
 
-    comp = Component()
+    with app.app_context():
+        comp = Component()
+        comp.init_app(app)
 
-    comp.init_app(app)
+        assert comp.app == app
+        assert comp._app is None
+        assert comp.config['FOO'] == 'BAR'
 
-    assert comp.app == app
-    assert comp._app is None
-    assert comp.config['FOO'] == 'BAR'
+        # now test with some context
+        ctx = {
+            'current_user': None,
+            'limit': 10,
+            'offset': 10,
+            'foo': 'bar',
+        }
 
-    # now test with some context
-    ctx = {
-        'current_user': None,
-        'limit': 10,
-        'offset': 10,
-        'foo': 'bar',
-    }
+        comp = Component()
+        comp.init_app(app, context=ctx)
 
-    comp = Component()
-    comp.init_app(app, context=ctx)
-
-    assert comp.app == app
-    assert comp.context == ctx
-    assert comp._context is None
+        assert comp.app == app
+        assert comp.context == ctx
 
 
 def test_component_context():
@@ -98,7 +97,6 @@ def test_component_context():
 
 def test_context_with_init_app():
     """Ensure context works with init_app"""
-    import pytest
     pytest.fail()
 
     # @TODO: Bring over parts of the test_multiple_apps stuff to test this
@@ -123,11 +121,9 @@ def test_component_implicit_current_app():
 def test_clear_context():
     """Ensure we can clear the context"""
     app = _create_app()
-
     ctx = {
         'ctxkey': 'bar',
     }
-
     comp = Component(app=app, context=ctx)
 
     assert comp.context == ctx
@@ -139,12 +135,23 @@ def test_clear_context():
 
 def test_clear_context_with_init_app():
     """Ensure clear_context works with init_app"""
-    import pytest
+    # @TODO: Bring over the tail end of test_multiple_apps to test this
     pytest.fail()
 
-    # @TODO: Bring over the tail end of test_multiple_apps to test this
+
+def test_component_raises_when_no_app():
+    """Ensure that Component.app raises if nothing is present."""
+    with pytest.raises(RuntimeError):
+        Component().app
 
 
+@pytest.mark.skip(reason=("We need to decide how we want to store the "
+                          "context. If we go full on Flask extension, the "
+                          "context will need to store it's context on the "
+                          "Application's context and access it dynamically. "
+                          "The issue with that is that it is prone to nuking "
+                          "the component's context whenever you leave the "
+                          "Application's context."))
 def test_multiple_apps():
     """Ensure components work with multiple apps at once."""
     # @TODO: Break this test up and make her smaller
@@ -159,29 +166,24 @@ def test_multiple_apps():
         'is_app2': True,
         'app2_key': 'foo',
     }
-    
-    # @TODO: Are we gonna use this in the test? I don't see why we need to...
-    # I guess we can test it once at the end...
+
     class TestComponent(Component):
-        def get_config_plus_context(self):
-            return self.app.config + self.context
+        pass
 
     comp = TestComponent()
-    comp.init_app(app1, context=app1_context)
-    comp.init_app(app2, context=app2_context)
 
-    with pytest.raises(RuntimeError):
-        comp.get_config_plus_context()
-
-    with app1.test_request_context():
-        assert comp.app == app1
+    # with app1.test_request_context():
+    with app1.app_context():
+        comp.init_app(app1, context=app1_context)
+        assert comp.app is app1
         assert comp._app is None
         assert comp.context == app1_context
         assert comp._context is None
         assert 'is_app2' not in comp.context
 
-    with app2.test_request_context():
-        assert comp.app == app2
+    with app2.app_context():
+        comp.init_app(app2, context=app2_context)
+        assert comp.app is app2
         assert comp._app is None
         assert comp.context == app2_context
         assert comp._context is None
@@ -196,6 +198,7 @@ def test_multiple_apps():
         'is_app2': 'baz',
         'new_key2': 'qux',
     }
+
     comp.update_context(new_app1_context, app=app1)
     comp.update_context(new_app2_context, app=app2)
 
@@ -240,7 +243,7 @@ def test_multiple_apps():
     with app2.test_request_context():
         assert comp.context == new_app2_context
         assert 'naked_key' not in comp.context
-        
+
     # if we have a current app and provide an explicit app, there should not be
     # a conflict
     fresh_context2 = {
