@@ -165,3 +165,18 @@ def test_configure_from_mapping_whitelist():
 
     assert app.config['FLEAKER_SHOULD_BE_PRESENT'] == True
     assert 'FLEAKER_SHOULD_NOT_BE_PRESENT' not in app.config
+
+
+def test_config_import_missing():
+    """Ensure that a proper error message is thrown if we can't find a config.
+    """
+    import pytest
+    pytest.fail()
+
+
+def test_config_import_no_owner():
+    """Ensure that a helpful error message is thrown if we can't read a config
+    file.
+    """
+    import pytest
+    pytest.fail()
