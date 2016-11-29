@@ -17,9 +17,11 @@ PY2 = sys.version_info.major == 2
 if PY2:
     text_type = unicode
     string_types = (str, unicode)
+    from urllib import urlencode
 else:
     text_type = str
     string_types = (str,)
+    from urllib.parse import urlencode
 
 # Grab the stack based upon what version of Flask we are using
 try:
