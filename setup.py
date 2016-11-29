@@ -71,6 +71,9 @@ setup(name='fleaker',
           'Flask-Login',
           'Flask-Marshmallow',
           'marshmallow',
+          # @TODO Move these to extra_requires
+          'arrow',
+          'pendulum',
           # @TODO: We gotta be missing some things
           # pick one
           'peewee',
