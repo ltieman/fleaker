@@ -24,7 +24,8 @@ from werkzeug.datastructures import ImmutableDict
 from werkzeug.local import Local
 
 from ._compat import text_type
-from .constants import DEFAULT_DICT, MISSING
+from .constants import DEFAULT_DICT
+from .missing import MissingDictSentinel
 from .utils import in_app_context
 
 # two small helpers to track some module specific info; _CONTEXT_LOCALS is
@@ -33,6 +34,7 @@ from .utils import in_app_context
 # already had their callbacks properly applied
 _CONTEXT_LOCALS = Local()
 _CONTEXT_CALLBACK_MAP = {}
+_CONTEXT_MISSING = MissingDictSentinel()
 
 
 class Component(object):
@@ -74,9 +76,9 @@ class Component(object):
             should **never** be able to modify the values within the
             ``context``.
     """
-    _context = MISSING
+    _context = _CONTEXT_MISSING
 
-    def __init__(self, app=None, context=MISSING):
+    def __init__(self, app=None, context=_CONTEXT_MISSING):
         """Eager constructor for the :class:`Component` class.
 
         Keyword Args:
@@ -87,14 +89,14 @@ class Component(object):
         """
         # the user has passed an app, but did not pass a context, so default it
         # out for them
-        if app is not None and context is MISSING:
+        if app is not None and context is _CONTEXT_MISSING:
             context = DEFAULT_DICT
 
         self._app = app
         self._context = context
 
         if app is not None:
-            self.init_app(app, context=MISSING)
+            self.init_app(app, context=_CONTEXT_MISSING)
 
     def init_app(self, app, context=DEFAULT_DICT):
         """Lazy constructor for the :class:`Component` class.
@@ -108,20 +110,20 @@ class Component(object):
 
         Keyword Args:
             context (dict, optional): The contextual information to supply to
-                this component. Pass :obj:`fleaker.MISSING` to avoid setting
-                app-specific contexts (you likely don't want to do this).
+                this component.
         """
-        if context is not MISSING:
+        if context is not _CONTEXT_MISSING:
             self.update_context(context, app=app)
 
         # do not readd callbacks if already present; and if there's no context
         # present, there's no real need to add callbacks
-        if app not in _CONTEXT_CALLBACK_MAP and context is not MISSING:
+        if (app not in _CONTEXT_CALLBACK_MAP
+                and context is not _CONTEXT_MISSING):
             key = self._get_context_name(app=app)
             self._context_callbacks(app, key, original_context=context)
 
     @staticmethod
-    def _context_callbacks(app, key, original_context=MISSING):
+    def _context_callbacks(app, key, original_context=_CONTEXT_MISSING):
         """Register the callbacks we need to properly pop and push the
         app-local context for a component.
 
@@ -155,7 +157,7 @@ class Component(object):
             """
             del _CONTEXT_LOCALS.context
 
-            if original_context is not MISSING:
+            if original_context is not _CONTEXT_MISSING:
                 setattr(_CONTEXT_LOCALS, key, original_context)
 
         # store for later so Blinker doesn't remove these listeners and so we
@@ -176,7 +178,7 @@ class Component(object):
             werkzeug.datastructures.ImmutableDict: The current ``context`` that
                 this component is being used within.
         """
-        if self._context is not MISSING:
+        if self._context is not _CONTEXT_MISSING:
             return self._context
 
         return _CONTEXT_LOCALS.context
@@ -200,13 +202,14 @@ class Component(object):
             app (flask.Flask, optional): The app to update this context for. If
                 not provided, the result of ``Component.app`` will be used.
         """
-        if app is None and self._context is MISSING and not in_app_context():
+        if (app is None and self._context is _CONTEXT_MISSING
+                and not in_app_context()):
             raise RuntimeError("Attempted to update component context without"
                                " a bound app context or eager app set! Please"
                                " pass the related app you want to update the"
                                " context for!")
 
-        if self._context is not MISSING:
+        if self._context is not _CONTEXT_MISSING:
             self._context = ImmutableDict(context)
         else:
             key = self._get_context_name(app=app)
@@ -220,13 +223,14 @@ class Component(object):
                 context for. If omitted, the value from ``Component.app`` is
                 used.
         """
-        if app is None and self._context is MISSING and not in_app_context():
+        if (app is None and self._context is _CONTEXT_MISSING
+                and not in_app_context()):
             raise RuntimeError("Attempted to clear component context without"
                                " a bound app context or eager app set! Please"
                                " pass the related app you want to update the"
                                " context for!")
 
-        if self._context is not MISSING:
+        if self._context is not _CONTEXT_MISSING:
             self._context = DEFAULT_DICT
         else:
             key = self._get_context_name(app=app)
