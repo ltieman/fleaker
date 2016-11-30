@@ -51,5 +51,30 @@ class App(MultiStageConfigurableApp, FleakerJSONApp, Flask):
         # @TODO: What was the rest of this supposed to do?
 
     @classmethod
-    def create_app(cls, **settings):
-        return cls(__name__, **settings)
+    def create_app(cls, import_name, **settings):
+        """Create a standard Fleaker web application.
+
+        This is the main entrypoint for creating your Fleaker application.
+        Instead of defining your own app factory function, it's preferred that
+        you use :meth:`create_app`, which is responsible for automatically
+        configuring extensions (such as your ORM), parsing setup code for
+        mixins, and calling relevant hooks (such as to setup logging).
+
+        Usage is easy:
+
+        .. code:: python
+
+            from fleaker import App
+
+            def my_create_app():
+                app = App.create_app(__name__)
+                return app
+
+        And the rest works like a normal Flask with application factories
+        setup!
+
+        .. versionadded:: 0.1.0
+           This has always been the preferred way to create Fleaker
+           Applications.
+        """
+        return cls(import_name, **settings)
