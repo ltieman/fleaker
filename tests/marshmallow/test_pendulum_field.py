@@ -11,7 +11,7 @@ from fleaker.marshmallow import PendulumField, Schema
 
 
 class PendulumSchema(Schema):
-    time = PendulumField(format='iso')
+    time = PendulumField(format='iso', allow_none=True)
 
 
 def test_pendulum_field_loads():
@@ -56,3 +56,12 @@ def test_pendulum_field_does_not_convert_when_told_not_to_like_a_good_boy():
     serialized = schema.load(payload).data
 
     assert serialized['time'] == payload['time']
+
+
+def test_pendulum_field_load_null():
+    """Ensure that a null value can be loaded into a PendulumField."""
+    schema = PendulumSchema()
+    payload = {'time': None}
+    serialized = schema.load(payload).data
+
+    assert serialized['time'] is None

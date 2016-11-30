@@ -49,15 +49,12 @@ class PhoneNumberField(fields.String, FleakerFieldMixin):
 
     def _serialize(self, value, attr, obj):
         """Format and validate the phone number using libphonenumber."""
-        if not value:
-            return None
-
-        strict_validation = self._get_metadata_or_context_value(
-            'strict_validation',
+        strict_validation = self.get_field_value(
+            'strict_phone_validation',
             default=False
         )
         strict_region = self.get_field_value(
-            'strict_region',
+            'strict_phone_region',
             default=strict_validation
         )
         region = self.get_field_value('region', 'US')
@@ -70,7 +67,6 @@ class PhoneNumberField(fields.String, FleakerFieldMixin):
         stripped_value = re.sub(r'[^\w+]', '', value)
 
         try:
-            # @TODO Make this more friendly with international numbers
             if not stripped_value.startswith('+') and not strict_region:
                 phone = phonenumbers.parse(stripped_value, region)
             else:
@@ -88,7 +84,7 @@ class PhoneNumberField(fields.String, FleakerFieldMixin):
 
         except phonenumbers.phonenumberutil.NumberParseException as exc:
             if strict_validation or strict_region:
-                raise ValidationError(exc.message)
+                raise ValidationError(exc)
 
         return value
 

@@ -5,8 +5,6 @@ an Arrow object.
 
 from __future__ import absolute_import
 
-from datetime import datetime
-
 import arrow
 
 from marshmallow import ValidationError, fields
@@ -61,22 +59,17 @@ class ArrowField(fields.DateTime, FleakerFieldMixin):
 
     def _deserialize(self, value, attr, data):
         """Deserializes a string into an Arrow object."""
-        if not self.context.get('convert_dates', True):
+        if not self.context.get('convert_dates', True) or not value:
             return value
 
         value = super(ArrowField, self)._deserialize(value, attr, data)
         timezone = self.get_field_value('timezone')
+        target = arrow.get(value)
 
-        if isinstance(value, datetime):
-            target = arrow.get(value)
+        if timezone and text_type(target.to(timezone)) != text_type(target):
+            raise ValidationError(
+                "The provided datetime is not in the "
+                "{} timezone.".format(timezone)
+            )
 
-            if (timezone and
-                    text_type(target.to(timezone)) != text_type(target)):
-                raise ValidationError(
-                    "The provided datetime is not in the "
-                    "{} timezone.".format(timezone)
-                )
-
-            return target
-
-        return value
+        return target
