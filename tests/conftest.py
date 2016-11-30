@@ -11,11 +11,8 @@ import os
 
 import pytest
 
-from fleaker import App
+from fleaker import App, MISSING
 from fleaker._compat import text_type
-
-
-absent = object()
 
 
 @pytest.fixture(autouse=True)
@@ -35,13 +32,13 @@ def update_environment(request):
     updates = updates.kwargs
 
     for key, val in updates.items():
-        originals[key] = os.environ.get(key, absent)
+        originals[key] = os.environ.get(key, MISSING)
         os.environ[key] = text_type(val)
 
     yield
 
     for key, val in originals.items():
-        if val is absent:
+        if val is MISSING:
             os.environ.pop(key, None)
         else:
             os.environ[key] = val
