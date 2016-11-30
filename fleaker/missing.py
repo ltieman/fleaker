@@ -11,6 +11,8 @@ for the function.
 :license: BSD, see LICENSE for more details.
 """
 
+from werkzeug.datastructures import ImmutableDict
+
 
 # @TODO Make this work as an empty iterator?
 class MissingSentinel(object):
@@ -20,12 +22,12 @@ class MissingSentinel(object):
     also be used like a boolean in an `if` statement, as this object will
     always evaluate to `False` when cast to a boolean.
 
-    >> MISSING = MissingSentinel()
-    >> bool(MISSING) is False
+    >>> MISSING = MissingSentinel()
+    >>> bool(MISSING) is False
     True
-    >> False is not MISSING
+    >>> False is not MISSING
     True
-    >> print("success") if not MISSING else print("failure")
+    >>> print("success") if not MISSING else print("failure")
     "success"
 
     .. versionadded:: 0.1.0
@@ -46,3 +48,24 @@ class MissingSentinel(object):
 
     # Python 2 aliases
     __nonzero__ = __bool__
+
+
+class MissingDictSentinel(MissingSentinel, ImmutableDict):
+    """This class can be used to create an object that works as sentinel, but
+    behaves like a dictionary. This is still very useful for dealing with
+    default arguments, but it might make more sense as a default value than the
+    standard :class:`MissingSentinel`.
+
+    Just like the :class:`MissingSentinel`, this evaluates to ``False`` when
+    cast to a bool.
+
+    >>> MISSING_DICT = MissingDictSentinel()
+    >>> bool(MISSING_DICT) is False
+    True
+    >>> False is not MISSING_DICT
+    True
+    >>> print("success") if not MISSING_DICT else print("failure")
+    "success"
+
+    .. versionadded:: 0.1.0
+    """

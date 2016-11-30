@@ -70,6 +70,8 @@ setup(name='fleaker',
           'Flask-Classful',
           'Flask-Login',
           'Flask-Marshmallow',
+          'arrow',
+          'blinker',
           'marshmallow',
           # @TODO Move these to extra_requires
           'arrow',

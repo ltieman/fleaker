@@ -1,5 +1,27 @@
 Thoughts and ideas:
 
+* Finish the component stuff
+  * There are a few skipped tests that need finishing.
+  * Update tests to run with a base component and an overridden component to
+    ensure naming is fine
+  * Update the init_app methods to have a `persist` flag which when set to True,
+    will make not restore the context back to it's original value whenever an
+    appcontext is popped; let's you weave in and out of app contexts at will,
+    like in the tests
+    * some commented out code in test_multiple_apps to accomodate this
+  * Update the `update_context` and `clear_context` methods to have an
+    `update_original` method which will update the original stored context, so
+    that whenever an app context is popped we restore back to that. Example: we
+    init the app with a context of "foo"; no matter what we change it too when
+    the app context is popped it goes back to "foo"; if we update the context
+    and provide `update_original=True` such that the new context is "bar", then
+    whenever we leave the app context, we go back to "bar"
+    * There should be tests for this as well, those need writing
+    * Likely requires us to update our CB map to be a three element tuple and
+      store the original value, so we can update it; and then recreate the
+      tuple anytime we update the original
+    * EVERY call to `init_app` should pass `update_original=True` to
+      `update_context`.
 * Install Fleaker as a console entrypoint
   * First task: `fleaker scaffold`
     * Scaffold a basic Flaker project.
