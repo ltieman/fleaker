@@ -3,14 +3,20 @@
 an Pendulum object.
 """
 
+from __future__ import absolute_import
+
 from datetime import datetime
 
 import pendulum
 
 from marshmallow import ValidationError, fields
 
+from fleaker._compat import text_type
 
-class PendulumField(fields.DateTime):
+from .mixin import FleakerFieldMixin
+
+
+class PendulumField(fields.DateTime, FleakerFieldMixin):
     """Marshmallow field that deserialzes datetimes into Pendulum objects.
 
     Has the same output on dump as the standard DateTime field. Accepts the
@@ -52,15 +58,16 @@ class PendulumField(fields.DateTime):
             return value
 
         value = super(PendulumField, self)._deserialize(value, attr, value)
-        timezone = self.metadata.get('timezone')
+        timezone = self.get_field_value('timezone')
 
         if isinstance(value, datetime):
             target = pendulum.instance(value)
 
-            if timezone and (target != target.in_timezone(timezone)):
+            if (timezone and (text_type(target) !=
+                              text_type(target.in_timezone(timezone)))):
                 raise ValidationError(
                     "The provided datetime is not in the "
-                    "{} timezone".format(timezone)
+                    "{} timezone.".format(timezone)
                 )
 
             return target

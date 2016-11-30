@@ -7,8 +7,10 @@ import phonenumbers
 
 from marshmallow import ValidationError, fields
 
+from .mixin import FleakerFieldMixin
 
-class PhoneNumberField(fields.String):
+
+class PhoneNumberField(fields.String, FleakerFieldMixin):
     """Marshmallow field that can format and validate phone numbers.
 
     All validation is done with Google's libphonenumber_ and is strictly
@@ -52,16 +54,16 @@ class PhoneNumberField(fields.String):
 
         strict_validation = self._get_metadata_or_context_value(
             'strict_validation',
-            False
+            default=False
         )
-        strict_region = self._get_metadata_or_context_value(
+        strict_region = self.get_field_value(
             'strict_region',
-            strict_validation
+            default=strict_validation
         )
-        region = self._get_metadata_or_context_value('region', 'US')
-        phone_number_format = self._get_metadata_or_context_value(
+        region = self.get_field_value('region', 'US')
+        phone_number_format = self.get_field_value(
             'phone_number_format',
-            phonenumbers.PhoneNumberFormat.INTERNATIONAL
+            default=phonenumbers.PhoneNumberFormat.INTERNATIONAL
         )
 
         # Remove excess special chars, except for the plus sign
@@ -93,17 +95,3 @@ class PhoneNumberField(fields.String):
     def _deserialize(self, *args):
         """Deserializiation is the same as serialization."""
         return self._serialize(*args)
-
-    def _get_metadata_or_context_value(self, key, default):
-        """Method to fetch a value from either the fields metadata or the
-        schemas context, in that order.
-        """
-        meta_value = self.metadata.get(key)
-        context_value = self.metadata.get(key)
-
-        if context_value is not None:
-            return context_value
-        elif meta_value is not None:
-            return meta_value
-
-        return default

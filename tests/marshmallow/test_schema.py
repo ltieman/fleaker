@@ -25,6 +25,7 @@ def test_load_schema_normally():
 
 
 def test_invalid_fields_error_out():
+    """Ensure that ValidationErrors are raised when a field doesn't belong."""
     schema = SchemaTest()
     payload = {
         'name': 'Bob Blah',
@@ -34,3 +35,15 @@ def test_invalid_fields_error_out():
     with pytest.raises(ValidationError,
                        message={'invalid': ['Invalid field']}):
         schema.load(payload)
+
+
+def test_contextual_strict_setting():
+    """Ensure that schema strictness can be toggled via the context."""
+    # By default, schemas are strict
+    assert SchemaTest().strict
+
+    # But they can be toggled via a kwarg
+    assert not SchemaTest(strict=False).strict
+
+    # It can also be toggled via the context, which some might find useful
+    assert not SchemaTest(context={'strict': False}).strict

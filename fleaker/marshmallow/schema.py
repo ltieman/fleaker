@@ -20,9 +20,10 @@ class Schema(_Schema):
     def __init__(self, **kwargs):
         super(Schema, self).__init__(**kwargs)
 
-        self.strict = True
+        if kwargs.get('strict') is None:
+            self.strict = True
 
-        if self.context.get('strict'):
+        if self.context.get('strict') is not None:
             self.strict = self.context.get('strict')
 
     @validates_schema(pass_original=True)
@@ -41,7 +42,7 @@ class Schema(_Schema):
         errors = []
 
         for field in original_data:
-            # Skip iterables because they will mess up this code hard
+            # Skip nested fields because they will loop infinitely
             if isinstance(field, (set, list, tuple, dict)):
                 continue
 

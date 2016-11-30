@@ -3,8 +3,10 @@
 
 from marshmallow import fields
 
+from .mixin import FleakerFieldMixin
 
-class ForeignKeyField(fields.Integer):
+
+class ForeignKeyField(fields.Integer, FleakerFieldMixin):
     """Marshmallow field that can be used with Peewee's foreign key setup.
 
     Turns a field named ``${relation_name}_id`` into ``${relation_name}`` on
@@ -43,7 +45,7 @@ class ForeignKeyField(fields.Integer):
         """
         super(ForeignKeyField, self)._add_to_schema(field_name, schema)
 
-        if self.context.get('convert_fks', True):
+        if self.get_field_value('convert_fks', default=True):
             self.attribute = field_name.replace('_id', '')
 
     def _serialize(self, value, attr, obj):

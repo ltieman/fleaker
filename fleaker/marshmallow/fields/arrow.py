@@ -3,6 +3,8 @@
 an Arrow object.
 """
 
+from __future__ import absolute_import
+
 from datetime import datetime
 
 import arrow
@@ -11,8 +13,10 @@ from marshmallow import ValidationError, fields
 
 from fleaker._compat import text_type
 
+from .mixin import FleakerFieldMixin
 
-class ArrowField(fields.DateTime):
+
+class ArrowField(fields.DateTime, FleakerFieldMixin):
     """Marshmallow field that deserialzes datetimes into Arrow objects.
 
     Has the same output on dump as the standard DateTime field. Accepts the
@@ -61,7 +65,7 @@ class ArrowField(fields.DateTime):
             return value
 
         value = super(ArrowField, self)._deserialize(value, attr, data)
-        timezone = self.metadata.get('timezone')
+        timezone = self.get_field_value('timezone')
 
         if isinstance(value, datetime):
             target = arrow.get(value)
@@ -70,7 +74,7 @@ class ArrowField(fields.DateTime):
                     text_type(target.to(timezone)) != text_type(target)):
                 raise ValidationError(
                     "The provided datetime is not in the "
-                    "{} timezone".format(timezone)
+                    "{} timezone.".format(timezone)
                 )
 
             return target
