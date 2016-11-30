@@ -85,6 +85,11 @@ class Component(object):
             context (dict, optional): The contextual information to supply to
                 this component.
         """
+        # the user has passed an app, but did not pass a context, so default it
+        # out for them
+        if app is not None and context is MISSING:
+            context = DEFAULT_DICT
+
         self._app = app
         self._context = context
 
@@ -109,7 +114,8 @@ class Component(object):
         if context is not MISSING:
             self.update_context(context, app=app)
 
-        # do not readd callbacks if already present
+        # do not readd callbacks if already present; and if there's no context
+        # present, there's no real need to add callbacks
         if app not in _CONTEXT_CALLBACK_MAP and context is not MISSING:
             key = self._get_context_name(app=app)
             self._context_callbacks(app, key, original_context=context)
@@ -136,16 +142,21 @@ class Component(object):
                 callback for ``appcontext_pushed`` (i.e., get and store the
                 current context) and the second element is the callback for
                 ``appcontext_popped`` (i.e., restore the current context to
-                nothing).
+                to it's original value).
         """
+        def _get_context(dummy_app):
+            """Set the context proxy so that it points to a specific context.
+            """
+            _CONTEXT_LOCALS.context = _CONTEXT_LOCALS(key)  # pylint: disable=assigning-non-slot
+
         def _clear_context(dummy_app):
+            """Remove the context proxy that points to a specific context and
+            restore the original context, if there was one.
+            """
             del _CONTEXT_LOCALS.context
 
             if original_context is not MISSING:
                 setattr(_CONTEXT_LOCALS, key, original_context)
-
-        def _get_context(dummy_app):
-            _CONTEXT_LOCALS.context = _CONTEXT_LOCALS(key)  # pylint: disable=assigning-non-slot
 
         # store for later so Blinker doesn't remove these listeners and so we
         # don't add them twice
@@ -189,7 +200,7 @@ class Component(object):
             app (flask.Flask, optional): The app to update this context for. If
                 not provided, the result of ``Component.app`` will be used.
         """
-        if not app and self._context is MISSING and not in_app_context():
+        if app is None and self._context is MISSING and not in_app_context():
             raise RuntimeError("Attempted to update component context without"
                                " a bound app context or eager app set! Please"
                                " pass the related app you want to update the"
@@ -209,7 +220,7 @@ class Component(object):
                 context for. If omitted, the value from ``Component.app`` is
                 used.
         """
-        if not app and self._context is MISSING and not in_app_context():
+        if app is None and self._context is MISSING and not in_app_context():
             raise RuntimeError("Attempted to clear component context without"
                                " a bound app context or eager app set! Please"
                                " pass the related app you want to update the"
@@ -229,9 +240,9 @@ class Component(object):
             flask.Flask: The app to use within the component.
 
         Raises:
-            RuntimeError: This raised if no app was provided to the component
-                and the method is being called outside of an application
-                context.
+            RuntimeError: This is raised if no app was provided to the
+                component and the method is being called outside of an
+                application context.
         """
         app = self._app or current_app
 
@@ -258,7 +269,7 @@ class Component(object):
     def _get_context_name(self, app=None):
         """Generate the name of the context variable for this component & app.
 
-        Because we store the ``context`` in the app's context so the component
+        Because we store the ``context`` in a Local so the component
         can be used across multiple apps, we cannot store the context on the
         instance itself. This function will generate a unique and predictable
         key in which to store the context.
