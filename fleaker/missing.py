@@ -20,12 +20,12 @@ class MissingSentinel(object):
     also be used like a boolean in an `if` statement, as this object will
     always evaluate to `False` when cast to a boolean.
 
-    >> MISSING = MissingSentinel()
-    >> bool(MISSING) is False
+    >>> MISSING = MissingSentinel()
+    >>> bool(MISSING) is False
     True
-    >> False is not MISSING
+    >>> False is not MISSING
     True
-    >> print("success") if not MISSING else print("failure")
+    >>> print("success") if not MISSING else print("failure")
     "success"
 
     .. versionadded:: 0.1.0
