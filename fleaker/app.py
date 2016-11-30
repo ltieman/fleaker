@@ -70,7 +70,7 @@ class App(MultiStageConfigurableApp, FleakerJSONApp, Flask):
                 app = App.create_app(__name__)
                 return app
 
-        And the rest works like a normal Flask with application factories
+        And the rest works like a normal Flask app with application factories
         setup!
 
         .. versionadded:: 0.1.0

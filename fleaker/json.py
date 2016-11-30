@@ -53,8 +53,17 @@ class FleakerJSONEncoder(flask.json.JSONEncoder):
     """
 
     def default(self, obj):
-        """This method is used by ``flask.JSONEncoder`` to encode individual
-        items in the JSON object.
+        """Encode individual objects into their JSON representation.
+
+        This method is used by :class:`flask.json.JSONEncoder` to encode
+        individual items in the JSON object.
+
+        Args:
+            obj (object): Any Python object we wish to convert to JSON.
+
+        Returns:
+            str: The stringified, valid JSON representation of our provided
+                object.
         """
         if isinstance(obj, decimal.Decimal):
             obj = format(obj, 'f')
