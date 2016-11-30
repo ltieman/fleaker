@@ -1,5 +1,10 @@
 # ~*~ coding: utf-8 ~*~
-"""Unit tests for Fleaker.json module."""
+"""
+tests.test_json
+~~~~~~~~~~~~~~~
+
+Unit tests for Fleaker.json module.
+"""
 
 import decimal
 

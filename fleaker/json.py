@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Custom JSON classes so more complex objects can be serialized by Flask."""
+"""
+fleaker.json
+~~~~~~~~~~~~
+
+Custom JSON classes so more complex objects can be serialized by Flask. This
+will be your default JSON Encoder if you use the standard Fleaker app.
+"""
 
 import datetime
 import decimal
@@ -40,7 +46,10 @@ class FleakerJSONEncoder(flask.json.JSONEncoder):
     not ISO8601. This isn't really acceptable for our use cases, so we will
     continue to override those types.
 
-    Extended from http://flask.pocoo.org/snippets/119/
+    Extended from http://flask.pocoo.org/snippets/119/.
+
+    .. versionadded:: 0.1.0
+       This has been the default JSONEncoder since Fleaker's inception.
     """
 
     def default(self, obj):
