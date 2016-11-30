@@ -17,6 +17,8 @@ PY2 = sys.version_info.major == 2
 if PY2:
     text_type = unicode
     string_types = (str, unicode)
+    iteritems = lambda dictlike: dictlike.iteritems()
 else:
     text_type = str
     string_types = (str,)
+    iteritems = lambda dictlike: iter(dictlike.items())
