@@ -50,9 +50,10 @@ def app():
 
     This fixture can be used to test methods on the Fleaker app instance easily
     and should be used where possible because playing around with application
-    contexts is not fun at all.
+    contexts is not fun at all. Granted, if you need to create your own
+    extended App for a specific test... this can't help you.
 
     Returns:
         fleaker.App: An instantiated Flask application.
     """
-    return App.create_app()
+    return App.create_app(__name__)
