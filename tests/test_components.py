@@ -11,7 +11,7 @@ Tests for the Fleaker Component tool.
 
 import pytest
 
-from fleaker import App, Component, MISSING
+from fleaker import App, Component, DEFAULT_DICT, MISSING
 
 
 def _create_app():
@@ -95,6 +95,30 @@ def test_component_context():
     assert comp.context['new_key'] == 'new'
 
 
+def test_component_context_no_default_eager_app():
+    """Ensure that context works without a default context."""
+    app = _create_app()
+
+    comp = Component(app=app)
+
+    new_ctx = {
+        'foo': 'bar'
+    }
+
+    assert comp._context is DEFAULT_DICT
+    assert comp.context is DEFAULT_DICT
+
+    comp.update_context(new_ctx)
+
+    assert comp.context == new_ctx
+    assert comp._context == new_ctx
+
+    comp.clear_context()
+
+    assert comp.context is DEFAULT_DICT
+    assert comp._context is DEFAULT_DICT
+
+
 @pytest.mark.skip("Need time to write this; will fill out later.")
 def test_context_with_init_app():
     """Ensure context works with init_app"""
@@ -157,12 +181,14 @@ def test_multiple_apps():
         'is_app1': True,
         'app1_key': 'bar',
     }
+    app1.config['IS_APP1'] = True
 
     app2 = App('test_app_2')
     app2_context = {
         'is_app2': True,
         'app2_key': 'foo',
     }
+    app2.config['IS_APP2'] = True
 
     class TestComponent(Component):
         pass
@@ -176,6 +202,8 @@ def test_multiple_apps():
         assert comp.context == app1_context
         assert comp._context is MISSING
         assert 'is_app2' not in comp.context
+        assert comp.config['IS_APP1']
+        assert 'IS_APP2' not in comp.config
 
     comp.init_app(app2, context=app2_context)
 
@@ -185,6 +213,8 @@ def test_multiple_apps():
         assert comp.context == app2_context
         assert comp._context is MISSING
         assert 'is_app1' not in comp.context
+        assert comp.config['IS_APP2']
+        assert 'IS_APP1' not in comp.config
 
     # now update the context
     new_app1_context = {
