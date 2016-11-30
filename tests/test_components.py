@@ -11,7 +11,8 @@ Tests for the Fleaker Component tool.
 
 import pytest
 
-from fleaker import App, Component, DEFAULT_DICT, MISSING
+from fleaker import App, Component, DEFAULT_DICT
+from fleaker.component import _CONTEXT_MISSING
 
 
 def _create_app():
@@ -200,7 +201,7 @@ def test_multiple_apps():
         assert comp.app is app1
         assert comp._app is None
         assert comp.context == app1_context
-        assert comp._context is MISSING
+        assert comp._context is _CONTEXT_MISSING
         assert 'is_app2' not in comp.context
         assert comp.config['IS_APP1']
         assert 'IS_APP2' not in comp.config
@@ -211,7 +212,7 @@ def test_multiple_apps():
         assert comp.app is app2
         assert comp._app is None
         assert comp.context == app2_context
-        assert comp._context is MISSING
+        assert comp._context is _CONTEXT_MISSING
         assert 'is_app1' not in comp.context
         assert comp.config['IS_APP2']
         assert 'IS_APP1' not in comp.config
@@ -239,13 +240,13 @@ def test_multiple_apps():
 
     with app1.test_request_context():
         assert comp.context == new_app1_context
-        assert comp._context is MISSING
+        assert comp._context is _CONTEXT_MISSING
         assert 'app1_key' not in comp.context
         assert comp.context['new_key'] == 'bar'
 
     with app2.test_request_context():
         assert comp.context == new_app2_context
-        assert comp._context is MISSING
+        assert comp._context is _CONTEXT_MISSING
         assert 'app2_key' not in comp.context
         assert comp.context['new_key2'] == 'qux'
 
