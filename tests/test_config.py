@@ -11,9 +11,14 @@ Provides test for the common configuration options.
 
 import os
 
+import mock
 import pytest
 
+from werkzeug.datastructures import ImmutableDict
+
 import fleaker
+
+from fleaker.config import MultiStageConfigurableApp
 
 import tests.configs.settings as settings
 
@@ -29,6 +34,9 @@ def _create_app():
     return fleaker.App('tests')
 
 
+# @TODO: ALL of these tests should have their names prefixed with config_, like
+# so: test_config_basic_configure;
+# @TODO: Document the above rule.
 def test_basic_configure():
     """Ensure generic configure method works."""
     # since this app is defined in a module, not a package, don't use
@@ -161,7 +169,60 @@ def test_configure_from_mapping_whitelist():
     }
 
     app.configure(configs, whitelist_keys_from_mappings=True,
-                 whitelist=whitelist)
+                  whitelist=whitelist)
 
     assert app.config['FLEAKER_SHOULD_BE_PRESENT'] == True
     assert 'FLEAKER_SHOULD_NOT_BE_PRESENT' not in app.config
+
+
+def test_config_post_configure_callbacks():
+    """Ensure post configure callbacks work."""
+    app = MultiStageConfigurableApp.create_app('tests')
+    app.config['CANARY'] = True
+
+    configure_args = {
+        'FOO': 'bar',
+    }
+
+    def evil_cb(cfg, cfg_args):
+        """This fella tries to change the config so we can make sure we pass
+        around a frozen config.
+        """
+        # this is the only way you can change the config from here
+        app.config['BAD_VAL'] = True
+
+    def small_cb(cfg, cfg_args):
+        """Ensure that we get the right arguments to our callbacks."""
+        assert cfg['CANARY']
+        assert cfg['FOO'] == 'bar'
+        assert cfg_args == (configure_args,)
+        assert 'BAD_VAL' not in cfg
+
+    # we need the proper arguments to the call assertions below, so construct
+    # them.
+    expected_config = app.config.copy()
+    expected_config['FOO'] = 'bar'
+    expected_config = ImmutableDict(expected_config)
+
+    # make sure we can count calls and call order
+    small_cb = mock.MagicMock(wraps=small_cb)
+    evil_cb = mock.MagicMock(wraps=evil_cb)
+    parent_mock = mock.Mock()
+    parent_mock.m1, parent_mock.m2 = small_cb, evil_cb
+
+    assert not app._post_configure_callbacks
+
+    app.add_post_configure_callback(evil_cb)
+    app.add_post_configure_callback(small_cb)
+
+    assert len(app._post_configure_callbacks) == 2
+
+    app.configure(configure_args)
+
+    # ensure we called the right number of times in the right order
+    assert small_cb.call_count == 1
+    assert evil_cb.call_count == 1
+    parent_mock.assert_has_calls([
+        mock.call.m2(expected_config, (configure_args,)),
+        mock.call.m1(expected_config, (configure_args,)),
+    ])
