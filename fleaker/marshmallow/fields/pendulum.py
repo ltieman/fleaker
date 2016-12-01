@@ -34,21 +34,10 @@ class PendulumField(fields.DateTime, FleakerFieldMixin):
 
     def _jsonschema_type_mapping(self):
         """Define the JSON Schema type for this field."""
-        result = {
+        return {
             'type': 'string',
             'format': 'date-time',
         }
-
-        # @TODO This is needed because marshmallow jsonschema doesn't support
-        # setting these attributes like it does with built-ins. Fix this
-        # upstream and remove this code.
-        if self.metadata.get('metadata', {}).get('description'):
-            result['description'] = self.metadata['metadata']['description']
-
-        if self.metadata.get('metadata', {}).get('title'):
-            result['title'] = self.metadata['metadata']['title']
-
-        return result
 
     def _deserialize(self, value, attr, obj):
         """Deserializes a string into a Pendulum object."""
