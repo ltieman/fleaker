@@ -54,3 +54,5 @@ Thoughts and ideas:
   * `fleaker.click` and `fleaker.invoke` for common and reusable task runner
     things.
 * Tests for our compat stuff.
+* Proper versioning and release stuff + contributing info + deploy docs + put
+  on PyPI + a better README + better general pkg management in general
