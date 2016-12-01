@@ -16,9 +16,8 @@ Attributes:
         This is because Marshmallow defines ``required`` as just the key being
         present and needs ``allow_none`` to not allow null values.
     STR_REQUIRED (werkzeug.datastructures.ImmutableDict): This is identical to
-        ``REQUIRED`` except that it add a check to make sure that the string is
-        at least 1 character except that it add a check to make sure that the
-        string is at least 1 character.
+        ``REQUIRED`` except that it adds a check to make sure that the string
+        is at least 1 character long.
 """
 
 from marshmallow.validate import Length

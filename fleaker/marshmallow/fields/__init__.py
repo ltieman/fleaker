@@ -5,20 +5,23 @@ from .foreign_key import ForeignKeyField
 # Arrow is optional
 try:
     import arrow
-    from .arrow import ArrowField
 except ImportError:
     pass
+else:
+    from .arrow import ArrowField
 
 # Pendulum is optional
 try:
     import pendulum
-    from .pendulum import PendulumField
 except ImportError:
     pass
+else:
+    from .pendulum import PendulumField
 
 # Phonenumbers are optional
 try:
     import phonenumbers
-    from .phone_number import PhoneNumberField
 except ImportError:
     pass
+else:
+    from .phone_number import PhoneNumberField

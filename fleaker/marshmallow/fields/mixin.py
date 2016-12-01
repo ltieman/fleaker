@@ -12,7 +12,6 @@ class FleakerFieldMixin(fields.Field):
         schemas context, in that order.
 
         Args:
-            field (marshmallow.fields.Field): The field to grab the value from.
             key (str): The name of the key to grab the value for.
 
         Keyword Args:

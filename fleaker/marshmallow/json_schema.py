@@ -34,7 +34,7 @@ Example:
             # This library doesn't care if the schema has been initialized
             UserSchema,
             # The folder to write this schema to
-            folder=docs/raml/schemas,
+            folder='docs/raml/schemas',
             # The context can control certain things about how the schema will
             # be dumped.
             context={'dump_schema': True}
@@ -90,6 +90,7 @@ TYPE_MAP.update({
 
 
 class FleakerJSONSchema(JSONSchema):
+    """Marshmallow schema that can be used to generate JSON schemas."""
 
     @classmethod
     def generate_json_schema(cls, schema, context=DEFAULT_DICT):
@@ -107,15 +108,7 @@ class FleakerJSONSchema(JSONSchema):
         Returns:
             dict: The JSON schema in dictionary form.
         """
-        if isinstance(schema, string_types):
-            schema = cls._get_object_from_python_path(schema)
-
-        if isclass(schema):
-            schema = schema()
-
-        if not isinstance(schema, Schema):
-            raise TypeError("The schema must be a path to a Marshmallow "
-                            "schema or a Marshmallow schema.")
+        schema = cls._get_schema(schema)
 
         # Generate the JSON Schema
         return cls(context=context).dump(schema).data
@@ -130,9 +123,9 @@ class FleakerJSONSchema(JSONSchema):
                 Python path to one, to create the JSON schema for.
 
         Keyword Args:
-            file_pointer (file, optional): The path or pointer to the file
-                to write this schema to. If not provided, the schema will be
-                dumped to ``sys.stdout``.
+            file_pointer (file, optional): The pointer to the file to write
+                this schema to. If not provided, the schema will be dumped to
+                ``sys.stdout``.
             folder (str, optional): The folder in which to save the JSON
                 schema. The name of the schema file can be optionally
                 controlled my the schema's ``Meta.json_schema_filename``. If
@@ -145,12 +138,7 @@ class FleakerJSONSchema(JSONSchema):
         Returns:
             dict: The JSON schema in dictionary form.
         """
-        if isinstance(schema, string_types):
-            schema = cls._get_object_from_python_path(schema)
-
-        if isclass(schema):
-            schema = schema()
-
+        schema = cls._get_schema(schema)
         json_schema = cls.generate_json_schema(schema, context=context)
 
         if folder:
@@ -165,6 +153,33 @@ class FleakerJSONSchema(JSONSchema):
         json.dump(json_schema, file_pointer, indent=2)
 
         return json_schema
+
+    @classmethod
+    def _get_schema(cls, schema):
+        """Method that will fetch a Marshmallow schema flexibly.
+
+        Args:
+            schema (marshmallow.Schema|str): Either the schema class, an
+                instance of a schema, or a Python path to a schema.
+
+        Returns:
+            marshmallow.Schema: The desired schema.
+
+        Raises:
+            TypeError: This is raised if the provided object isn't
+                a Marshmallow schema.
+        """
+        if isinstance(schema, string_types):
+            schema = cls._get_object_from_python_path(schema)
+
+        if isclass(schema):
+            schema = schema()
+
+        if not isinstance(schema, Schema):
+            raise TypeError("The schema must be a path to a Marshmallow "
+                            "schema or a Marshmallow schema.")
+
+        return schema
 
     @staticmethod
     def _get_object_from_python_path(python_path):
@@ -194,9 +209,5 @@ class FleakerJSONSchema(JSONSchema):
 
         if isclass(schema):
             schema = schema()
-
-        if not isinstance(schema, Schema):
-            raise TypeError("The schema must be a path to a Marshmallow "
-                            "schema or a Marshmallow schema.")
 
         return schema
