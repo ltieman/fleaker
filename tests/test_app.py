@@ -62,3 +62,6 @@ def test_app_basic_routes(app):
     with app.test_client() as client:
         resp = client.get('/test')
         assert resp.data == b'content'
+
+# @TODO (tests): Tests to ensure that the Standard App is using all the mixins
+# properly; can be just isinstance or light func test
