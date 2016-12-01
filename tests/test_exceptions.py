@@ -102,6 +102,40 @@ def _redir_url(fragment, query_args=''):
     return "http://{}/{}{}".format(SERVER_NAME, fragment, query_args)
 
 
+# please list all custom exceptions here for a quick test
+@pytest.mark.parametrize('spec', [
+    (exceptions._FleakerBaseException, 'Base Exc', 401),
+    (exceptions.FleakerException, 'Fleaker Exc', 402),
+    (exceptions.AppException, 'App Exc', 403),
+])
+def test_exceptions_basic_args(spec):
+    """Ensure we can raise Exceptions with a status code and message, or no
+    args.
+    """
+    exc_type, msg, code = spec
+
+    # message and status code should work
+    with pytest.raises(exc_type) as exc:
+        raise exc_type(msg, status_code=code)
+
+    assert type(exc.value) is exc_type
+    assert exc.value.message == msg
+    assert exc.value.status_code == code
+
+    # and no args should also work
+    with pytest.raises(exc_type) as exc:
+        raise exc_type()
+
+    assert type(exc.value) is exc_type
+    assert exc.value.message == ''
+    assert exc.value.status_code is None
+    assert exc.value.redirect is MISSING
+    assert exc.value.redirect_args is DEFAULT_DICT
+    assert exc.value.prevent_rollback is False
+    assert exc.value.flash_message is False
+    assert exc.value.flash_level == 'danger'
+
+
 # @TODO (test): Combine with the flash instantiation test
 @pytest.mark.parametrize('spec', [
     (exceptions._FleakerBaseException, '/foo', {'bar': 1},),
@@ -222,40 +256,6 @@ def test_exception_handler_redirect_with_flash(spec):
 @pytest.mark.skip(reason="While the ORM is finished, this needs implementing")
 def test_exception_handler_auto_rollback():
     """Ensure we automatically roll back any open transactions."""
-
-
-# please list all custom exceptions here for a quick test
-@pytest.mark.parametrize('spec', [
-    (exceptions._FleakerBaseException, 'Base Exc', 401),
-    (exceptions.FleakerException, 'Fleaker Exc', 402),
-    (exceptions.AppException, 'App Exc', 403),
-])
-def test_exceptions_basic_args(spec):
-    """Ensure we can raise Exceptions with a status code and message, or no
-    args.
-    """
-    exc_type, msg, code = spec
-
-    # message and status code should work
-    with pytest.raises(exc_type) as exc:
-        raise exc_type(msg, status_code=code)
-
-    assert type(exc.value) is exc_type
-    assert exc.value.message == msg
-    assert exc.value.status_code == code
-
-    # and no args should also work
-    with pytest.raises(exc_type) as exc:
-        raise exc_type()
-
-    assert type(exc.value) is exc_type
-    assert exc.value.message == ''
-    assert exc.value.status_code is None
-    assert exc.value.redirect is MISSING
-    assert exc.value.redirect_args is DEFAULT_DICT
-    assert exc.value.prevent_rollback is False
-    assert exc.value.flash_message is False
-    assert exc.value.flash_level == 'danger'
 
 
 @pytest.mark.parametrize('exc_type', [
