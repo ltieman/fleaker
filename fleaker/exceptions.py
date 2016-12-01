@@ -12,6 +12,7 @@ Provides test for the common configuration options.
 from flask import flash, url_for, redirect
 
 from fleaker import DEFAULT_DICT, MISSING
+from fleaker.base import BaseApplication
 
 
 class _FleakerBaseException(Exception):
@@ -66,9 +67,9 @@ class _FleakerBaseException(Exception):
             will be used in conjunction with :meth:`error_page` to render
             pretty, automatic error pages.
         redirect (unicode): If this is set when initializing the exception, it
-            must be the name of a route registered to the application. When
-            this hits the global error handler for the exception, it can
-            optionally redirect the user to this route.
+            must be the name of a route registered to the application (the
+            actual endpoint name). When this hits the global error handler for
+            the exception, it can optionally redirect the user to this route.
         redirect_args (dict): This dict of args will be piped directly into
             `url_for` for the redirect.
         prevent_rollback (bool): By default, if this exception bubbles up to a
@@ -126,12 +127,9 @@ class _FleakerBaseException(Exception):
         if exc.redirect is not MISSING:
             return redirect(url_for(exc.redirect, **exc.redirect_args))
 
-        # this should break the test
-        error_result = self.error_page()
-        # this should work
-        # error_result = exc.error_page()
+        error_result = exc.error_page()
 
-        if error_result:
+        if error_result is not None:
             return error_result, exc.status_code or 500
 
     @classmethod
@@ -186,6 +184,57 @@ class _FleakerBaseException(Exception):
 
         return app
 
+    def error_page(self):
+        """Render the error page we should display in the errorhandler callback
+        for this exception.
+
+        This is a method that is used to hook into the standard, automatic
+        error handler for Fleaker exceptions. When the error handler runs, and
+        is not set to redirect, it will look here for content. If this method
+        returns ANYTHING other than ``None``, the returned value will be the
+        returned result of the errorhandler. If ``None`` is returned, then the
+        errorhandler will not return anything.
+
+        While this provides the content for an error page, the status code for
+        your error page is set via the ``status_code`` kwarg passed to the
+        Exception's consturctor. Any attempt to return an additional status
+        code will not work. The default status code is a 500.
+
+        This is a wonderful location to inject a render of a stock 500
+        template. An example of that can be seen here:
+
+        .. code:: python
+
+            import fleaker
+
+            from flask import render_template
+
+            # standard app factory
+            def create_app():
+                app = fleaker.App.create_app(__name__)
+
+                # now create a base exception for your app
+                class BaseException(fleaker.AppException):
+                    \"\"\"The base exception for the entire app.\"\"\"
+
+                    def error_page(self):
+                        \"\"\"Render our 500 page.\"\"\"
+                        return render_template('500.html.jinja')
+
+                # now register the errorhandler for our exception
+                BaseException.register_errorhandler(app)
+
+                # and you're done! any unhandled exception thrown that derives
+                # from your base exception will return a nice 500 page!
+
+        Returns:
+            None|object: Returns the response that the entire error handler
+                should also return. If the returned response is ``None``, then
+                the error handler will ALSO return nothing at all. Any other
+                response will be returned through the stack.
+        """
+        return None
+
 
 class FleakerException(_FleakerBaseException):
     """The base class for all specific exceptions of the Fleaker library
@@ -236,3 +285,53 @@ class AppException(_FleakerBaseException):
                redirect should be set via the ``redirect_args`` kwarg, both are
                passed straight to :meth:`flask.url_for`.
     """
+
+
+class ErrorAwareApp(BaseApplication):
+    """The :class:`ErrorAwareApp` Application Mixin is a mixin used to
+    automatically register a standard errorhandler function for the
+    :class:`AppException` exception class. This registration is done
+    immediately after App creation.
+
+    If this registration is done, then any instances of :class:`AppException`
+    that bubble out of a View will be automatically handled on a best effort
+    basis.
+
+    For now, see the thorough documentation around :class:`AppException` and
+    :class`_FleakerBaseException` for more info.
+
+    This mixin accepts one custom app creation option:
+        * ``register_errohandler`` - a boolean indicating if we want to
+          automatically register an errorhandler for the :class:`AppException`
+          exception class after we create this App. Pass ``False`` to prevent
+          registration. Default is ``True``.
+
+    @TODO (exc, docs): Provide more context and a mini-tutorial here.
+    """
+
+    @classmethod
+    def post_create_app(cls, app, **settings):
+        """Register the errorhandler for the AppException to the passed in
+        App.
+
+        Args:
+            app (fleaker.base.BaseApplication): A Flask application that
+                extends the Fleaker Base Application, such that the hooks are
+                implemented.
+
+        Kwargs:
+            register_errorhandler (bool): A boolean indicating if we want to
+                automatically register an errorhandler for the
+                :class:`AppException` exception class after we create this App.
+                Pass ``False`` to prevent registration. Default is ``True``.
+
+
+        Returns:
+            fleaker.base.BaseApplication: Returns the app it was given.
+        """
+        register_errorhandler = settings.pop('register_errorhandler', True)
+
+        if register_errorhandler:
+            AppException.register_errorhandler(app)
+
+        return app
