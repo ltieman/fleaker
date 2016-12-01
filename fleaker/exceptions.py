@@ -62,7 +62,9 @@ class _FleakerBaseException(Exception):
             passed as either the first arg, or the ``message`` kwarg.
         status_code (int): The status code that processing of this Exception
             should result in. For example, if this exception indicates an
-            Authorization Failure, a 403 is a nice status code to use.
+            Authorization Failure, a 403 is a nice status code to use. This
+            will be used in conjunction with :meth:`error_page` to render
+            pretty, automatic error pages.
         redirect (unicode): If this is set when initializing the exception, it
             must be the name of a route registered to the application. When
             this hits the global error handler for the exception, it can
@@ -114,7 +116,7 @@ class _FleakerBaseException(Exception):
             exc (_FleakerBaseException): The exception that was thrown that we
                 are to handle.
         """
-        # @TODO: Implement this when the ORM/DB stuff is done
+        # @TODO (orm, exc): Implement this when the ORM/DB stuff is done
         # if not exc.prevent_rollback:
         #     db.session.rollback()
 
@@ -124,8 +126,65 @@ class _FleakerBaseException(Exception):
         if exc.redirect is not MISSING:
             return redirect(url_for(exc.redirect, **exc.redirect_args))
 
-        # @TODO: Remove this; replace with some real shit
-        # return ""
+        # this should break the test
+        error_result = self.error_page()
+        # this should work
+        # error_result = exc.error_page()
+
+        if error_result:
+            return error_result, exc.status_code or 500
+
+    @classmethod
+    def register_errorhandler(cls, app):
+        """Register the standard error handler for this exception on this App.
+
+        This will set :meth:`errorhandler_callback` as an error handler for
+        this exception. This means all exceptions that inherit from this class
+        will be caught by very error handler.
+
+        This method does nothing other than registration and the actual
+        implementation of the callback is found in
+        :meth:`errorhandler_callback`. If you want a custom exception derived
+        from this exception to run a custom callback, please override
+        :meth:`errorhandler_callback`, and continue to use this function to
+        register.
+
+        Example usage:
+
+        .. code:: python
+
+            from fleaker import AppException
+
+            def create_app():
+                app = fleaker.App(__name__)
+
+                # this will register the standard callback
+                AppException.register_errorhandler(app)
+
+                class MyException(AppException):
+                    \"\"\"Has a custom handler callback.\"\"\"
+
+                    @classmethod
+                    def errorhandler_callback(cls, exc):
+                        \"\"\"Custom error handler that greets the user.\"\"\"
+                        return 'Hi'
+
+                # now whenever MyException or it's sub-classes are thrown, the
+                # user will get `Hi` back
+                MyException.register_errorhandler(app)
+
+        Args:
+            app (flask.Flask): The Flask application to register the standard
+                handler callback to.
+
+        Returns:
+            fleaker.exceptions._FleakerBaseException: Returns the same class
+                this was called on, to provide a fluent interface (e.g.,
+                register error handlers on multiple apps in one method chain).
+        """
+        app.errorhandler(cls)(cls.errorhandler_callback)
+
+        return app
 
 
 class FleakerException(_FleakerBaseException):
