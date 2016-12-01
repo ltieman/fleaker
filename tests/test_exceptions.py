@@ -95,14 +95,14 @@ def _redir_url(fragment, query_args=''):
         fragment = fragment[1:]
 
     if query_args:
-        # @TODO: Ewwww.... fix this
+        # @TODO (test): Ewwww.... fix this
         query_args = json.loads(query_args)
         query_args = '?' + urlencode(query_args)
 
     return "http://{}/{}{}".format(SERVER_NAME, fragment, query_args)
 
 
-# @TODO: Combine with the flash instantiation test
+# @TODO (test): Combine with the flash instantiation test
 @pytest.mark.parametrize('spec', [
     (exceptions._FleakerBaseException, '/foo', {'bar': 1},),
     (exceptions.FleakerException, '/bar', {'baz': 1},),
@@ -219,7 +219,7 @@ def test_exception_handler_redirect_with_flash(spec):
         assert session['_flashes'].pop() == (flash_level, flash_msg)
 
 
-@pytest.mark.skip("We haven't implemented ORM stuff yet.")
+@pytest.mark.skip(reason="While the ORM is finished, this needs implementing")
 def test_exception_handler_auto_rollback():
     """Ensure we automatically roll back any open transactions."""
 
@@ -387,7 +387,6 @@ def test_exception_error_handler_callback():
         exc = AppException(redirect='redir_method',
                            redirect_args={'foo': 'bar'})
         res = AppException.errorhandler_callback(exc)
-        # @TODO: Poke around and find the right value
         expected = redirect(url_for('redir_method', foo='bar'))
         assert res.headers == expected.headers
         assert res.data == expected.data
@@ -459,19 +458,3 @@ def test_exception_error_handler_custom_callback():
             assert res.data == STANDARD_FLASK_500
     finally:
         handler_mock.stop()
-
-
-# @TODO: write a test for the error_handler method DIRECTLY
-
-# Test the following:
-# - auto-redirect -- CHECK!
-# - flash messages + level -- CHECK!
-# - redirect + flashes -- CHECK!
-# - stub for ORM test? -- CHECK!
-# - setting of status code and message -- CHECK!
-# - basic throws -- CHECK!
-# - registering the error handler -- CHECK (I think)!
-# - tests for automatic status code setting -- CHECK! (P sure)
-# - the error handler cb itself -- CHECK! (P sure)
-# - test an overridden error handler with the auto-register... -- CHECK! (P
-# sure)
