@@ -2,6 +2,7 @@
 .tox
 .~lock.*
 .ropeproject
+test_db.db
 
 # for pytest
 .cache/*

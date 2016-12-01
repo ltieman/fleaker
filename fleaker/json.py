@@ -12,6 +12,7 @@ import decimal
 
 import arrow
 import flask
+
 # This may or may not be installed.
 try:
     import phonenumbers
@@ -19,6 +20,7 @@ except ImportError:
     phonenumbers = None
 
 from ._compat import text_type
+from .base import BaseApplication
 
 
 class FleakerJSONEncoder(flask.json.JSONEncoder):
@@ -96,7 +98,7 @@ class FleakerJSONEncoder(flask.json.JSONEncoder):
         return super(FleakerJSONEncoder, self).default(obj)
 
 
-class FleakerJSONApp(flask.Flask):
+class FleakerJSONApp(BaseApplication):
     """App class mixin that defines a custom JSON encoder.
 
     Attributes:

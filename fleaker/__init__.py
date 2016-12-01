@@ -16,3 +16,4 @@ from .app import App
 from .component import Component
 from .constants import DEFAULT_DICT, MISSING
 from .missing import MissingSentinel
+from .orm import db

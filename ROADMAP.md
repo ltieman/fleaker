@@ -28,11 +28,12 @@ Thoughts and ideas:
     * Pass a `--template=$URL` where $URL is a git repository and it hooks into
       cookiecutter for you and just GOES!
 * Wrap up the ORMS.
-  * Pick either SQLA or PeeWee, at install time.
-  * Provides and sets up your singleton for you.
+  * Pick either SQLA or PeeWee, at install time. -- CHECK
+  * Provides and sets up your singleton for you. -- CHECK
   * Fails to import if neither model is backend is installed.
     * Use pytest marks to test specific backends or no backend.
   * Probably some sort of DBAwareComponent.
+  * Finish the ORM stuff; finish the SQLA stuff
 * Wrap up Marshmallow.
   * Wrap up Webargs?
 * Setup the function that registers the login manager.
