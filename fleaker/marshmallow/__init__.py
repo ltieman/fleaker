@@ -2,6 +2,7 @@
 """Module that defines basic Marshmallow schema helpers."""
 
 from .constants import REQUIRED, STR_REQUIRED
+from .extension import MarshmallowAwareApp, marsh
 from .json_schema import FleakerJSONSchema
 from .schema import Schema
 from .fields import ForeignKeyField
