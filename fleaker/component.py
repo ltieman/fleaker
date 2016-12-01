@@ -19,11 +19,22 @@ state, grabbing configuration, storing a context, and so forth.
 :license: BSD, see LICENSE for more details.
 """
 
-from flask import current_app
+from flask import appcontext_pushed, appcontext_popped, current_app
 from werkzeug.datastructures import ImmutableDict
+from werkzeug.local import Local
 
 from ._compat import text_type
 from .constants import DEFAULT_DICT
+from .missing import MissingDictSentinel
+from .utils import in_app_context
+
+# two small helpers to track some module specific info; _CONTEXT_LOCALS is
+# a Local where we'll store all contexts for all possible apps;
+# _CONTEXT_CALLBACK_MAP is a small map that lets us track which apps have
+# already had their callbacks properly applied
+_CONTEXT_LOCALS = Local()
+_CONTEXT_CALLBACK_MAP = {}
+_CONTEXT_MISSING = MissingDictSentinel()
 
 
 class Component(object):
@@ -65,9 +76,9 @@ class Component(object):
             should **never** be able to modify the values within the
             ``context``.
     """
-    _context = DEFAULT_DICT
+    _context = _CONTEXT_MISSING
 
-    def __init__(self, app=None, context=DEFAULT_DICT):
+    def __init__(self, app=None, context=_CONTEXT_MISSING):
         """Eager constructor for the :class:`Component` class.
 
         Keyword Args:
@@ -76,11 +87,16 @@ class Component(object):
             context (dict, optional): The contextual information to supply to
                 this component.
         """
+        # the user has passed an app, but did not pass a context, so default it
+        # out for them
+        if app is not None and context is _CONTEXT_MISSING:
+            context = DEFAULT_DICT
+
         self._app = app
-        self.context = context
+        self._context = context
 
         if app is not None:
-            self.init_app(app, context=context)
+            self.init_app(app, context=_CONTEXT_MISSING)
 
     def init_app(self, app, context=DEFAULT_DICT):
         """Lazy constructor for the :class:`Component` class.
@@ -96,7 +112,63 @@ class Component(object):
             context (dict, optional): The contextual information to supply to
                 this component.
         """
-        self.update_context(context, app=app)
+        if context is not _CONTEXT_MISSING:
+            self.update_context(context, app=app)
+
+        # do not readd callbacks if already present; and if there's no context
+        # present, there's no real need to add callbacks
+        if (app not in _CONTEXT_CALLBACK_MAP
+                and context is not _CONTEXT_MISSING):
+            key = self._get_context_name(app=app)
+            self._context_callbacks(app, key, original_context=context)
+
+    @staticmethod
+    def _context_callbacks(app, key, original_context=_CONTEXT_MISSING):
+        """Register the callbacks we need to properly pop and push the
+        app-local context for a component.
+
+        Args:
+            app (flask.Flask): The app who this context belongs to. This is the
+                only sender our Blinker signal will listen to.
+            key (str): The key on ``_CONTEXT_LOCALS`` that this app's context
+                listens to.
+
+        Kwargs:
+            original_context (dict): The original context present whenever
+                these callbacks were registered. We will restore the context to
+                this value whenever the app context gets popped.
+
+        Returns:
+            (function, function): A two-element tuple of the dynamic functions
+                we generated as appcontext callbacks. The first element is the
+                callback for ``appcontext_pushed`` (i.e., get and store the
+                current context) and the second element is the callback for
+                ``appcontext_popped`` (i.e., restore the current context to
+                to it's original value).
+        """
+        def _get_context(dummy_app):
+            """Set the context proxy so that it points to a specific context.
+            """
+            _CONTEXT_LOCALS.context = _CONTEXT_LOCALS(key)  # pylint: disable=assigning-non-slot
+
+        def _clear_context(dummy_app):
+            """Remove the context proxy that points to a specific context and
+            restore the original context, if there was one.
+            """
+            del _CONTEXT_LOCALS.context
+
+            if original_context is not _CONTEXT_MISSING:
+                setattr(_CONTEXT_LOCALS, key, original_context)
+
+        # store for later so Blinker doesn't remove these listeners and so we
+        # don't add them twice
+        _CONTEXT_CALLBACK_MAP[app] = (_get_context, _clear_context)
+
+        # and listen for any app context changes
+        appcontext_pushed.connect(_get_context, app)
+        appcontext_popped.connect(_clear_context, app)
+
+        return (_get_context, _clear_context)
 
     @property
     def context(self):
@@ -106,20 +178,10 @@ class Component(object):
             werkzeug.datastructures.ImmutableDict: The current ``context`` that
                 this component is being used within.
         """
-        # @TODO Figure out how to get extension style contexts working
-        # ctx = STACK.top
-        #
-        # if ctx is not None:
-        #     key = self._get_context_name()
-        #
-        #     if not hasattr(ctx, key):
-        #         setattr(ctx, key, DEFAULT_DICT)
-        #
-        #     return getattr(ctx, key)
-        #
-        # return DEFAULT_DICT
+        if self._context is not _CONTEXT_MISSING:
+            return self._context
 
-        return self._context
+        return _CONTEXT_LOCALS.context
 
     @context.setter
     def context(self, context):
@@ -140,14 +202,18 @@ class Component(object):
             app (flask.Flask, optional): The app to update this context for. If
                 not provided, the result of ``Component.app`` will be used.
         """
-        # @TODO Figure out how to get the extension style context working
-        # ctx = STACK.top
-        #
-        # if ctx is not None:
-        #     key = self._get_context_name(app=app)
-        #     setattr(ctx, key, ImmutableDict(context))
+        if (app is None and self._context is _CONTEXT_MISSING
+                and not in_app_context()):
+            raise RuntimeError("Attempted to update component context without"
+                               " a bound app context or eager app set! Please"
+                               " pass the related app you want to update the"
+                               " context for!")
 
-        self._context = ImmutableDict(context)
+        if self._context is not _CONTEXT_MISSING:
+            self._context = ImmutableDict(context)
+        else:
+            key = self._get_context_name(app=app)
+            setattr(_CONTEXT_LOCALS, key, ImmutableDict(context))
 
     def clear_context(self, app=None):
         """Clear the component's context.
@@ -157,14 +223,18 @@ class Component(object):
                 context for. If omitted, the value from ``Component.app`` is
                 used.
         """
-        # @TODO Figure out how to get the extension style context working
-        # ctx = STACK.top
-        #
-        # if ctx is not None:
-        #     key = self._get_context_name(app=app)
-        #     setattr(ctx, key, DEFAULT_DICT)
+        if (app is None and self._context is _CONTEXT_MISSING
+                and not in_app_context()):
+            raise RuntimeError("Attempted to clear component context without"
+                               " a bound app context or eager app set! Please"
+                               " pass the related app you want to update the"
+                               " context for!")
 
-        self._context = DEFAULT_DICT
+        if self._context is not _CONTEXT_MISSING:
+            self._context = DEFAULT_DICT
+        else:
+            key = self._get_context_name(app=app)
+            setattr(_CONTEXT_LOCALS, key, DEFAULT_DICT)
 
     @property
     def app(self):
@@ -174,14 +244,13 @@ class Component(object):
             flask.Flask: The app to use within the component.
 
         Raises:
-            RuntimeError: This raised if no app was provided to the component
-                and the method is being called outside of an application
-                context.
+            RuntimeError: This is raised if no app was provided to the
+                component and the method is being called outside of an
+                application context.
         """
         app = self._app or current_app
 
-        # This is the best way to check if current_app is a proxy.
-        if not dir(app):
+        if not in_app_context(app):
             raise RuntimeError("This component hasn't been initialized yet "
                                "and an app context doesn't exist.")
 
@@ -204,7 +273,7 @@ class Component(object):
     def _get_context_name(self, app=None):
         """Generate the name of the context variable for this component & app.
 
-        Because we store the ``context`` in the app's context so the component
+        Because we store the ``context`` in a Local so the component
         can be used across multiple apps, we cannot store the context on the
         instance itself. This function will generate a unique and predictable
         key in which to store the context.
@@ -213,20 +282,18 @@ class Component(object):
             str: The name of the context variable to set and get the context
                 from.
         """
-        # @TODO Determine if this is needed after we figure out how to store
-        # the context.
-        # elements = [
-        #     self.__class__.__name__,
-        #     'context',
-        #     text_type(id(self))
-        # ]
-        #
-        # if app:
-        #     elements.append(text_type(id(app)))
-        # else:
-        #     try:
-        #         elements.append(text_type(id(self.app)))
-        #     except RuntimeError:
-        #         pass
-        #
-        # return '_'.join(elements)
+        elements = [
+            self.__class__.__name__,
+            'context',
+            text_type(id(self)),
+        ]
+
+        if app:
+            elements.append(text_type(id(app)))
+        else:
+            try:
+                elements.append(text_type(id(self.app)))
+            except RuntimeError:
+                pass
+
+        return '_'.join(elements)

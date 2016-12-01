@@ -22,9 +22,3 @@ else:
     text_type = str
     string_types = (str,)
     from urllib.parse import urlencode
-
-# Grab the stack based upon what version of Flask we are using
-try:
-    from flask import _app_ctx_stack as STACK
-except ImportError:
-    from flask import _request_ctx_stack as STACK
