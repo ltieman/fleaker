@@ -10,12 +10,14 @@
     :license: BSD, see LICENSE for more details.
 """
 
-from flask import Flask
-
+from .base import BaseApplication
 from .config import MultiStageConfigurableApp
+from .json import FleakerJSONApp
+from .orm import ORMAwareApp
 
 
-class App(MultiStageConfigurableApp, Flask):
+class App(MultiStageConfigurableApp, FleakerJSONApp, ORMAwareApp,
+          BaseApplication):
     """The ``App`` class is the primary entrypoint for using Fleaker and is
     a simple WSGI Application. In it's simplest form, you can think of
     ``fleaker.App`` as roughly equivalent to ``flask.Flask``. On top of
@@ -48,8 +50,3 @@ class App(MultiStageConfigurableApp, Flask):
         super(App, self).__init__(import_name, **kwargs)
 
         # @TODO: What was the rest of this supposed to do?
-
-    @staticmethod
-    def create_app():
-        # @TODO: Flesh out; this is your main creation entrypoint
-        pass

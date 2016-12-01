@@ -10,18 +10,20 @@ This module implements various utilities for configuring your Fleaker
 :license: BSD, see LICENSE for more details.
 """
 
+import copy
 import importlib
 import os
 import types
 
 from os.path import splitext
 
-import flask
+from werkzeug.datastructures import ImmutableDict
 
 from ._compat import string_types
+from .base import BaseApplication
 
 
-class MultiStageConfigurableApp(flask.Flask):
+class MultiStageConfigurableApp(BaseApplication):
     """The :class:`MultiStageConfigurableApp` is a mixin used to provide the
     primary ``configure`` method used to configure a `Fleaker` :class:`App`.
 
@@ -29,6 +31,26 @@ class MultiStageConfigurableApp(flask.Flask):
        The :class:`MultiStageConfigurableApp` class has existed since Fleaker
        was conceived.
     """
+
+    def __init__(self, import_name, **settings):
+        """Construct the app.
+
+        Adds a list for storing our post configure callbacks.
+
+        All args and kwargs are the same as the
+        :class:`fleaker.base.BaseApplication`.
+        """
+        # A dict of all callbacks we should run after configure finishes. These
+        # are then separated by those that should run once, or run multiple
+        # times
+        # @TODO (QoL): There has to be a cleaner way to do this, do that
+        self._post_configure_callbacks = {
+            'multiple': [],
+            'single': [],
+        }
+
+        super(MultiStageConfigurableApp, self).__init__(import_name,
+                                                        **settings)
 
     def configure(self, *args, **kwargs):
         """Configure the Application through a varied number of sources of
@@ -126,6 +148,9 @@ class MultiStageConfigurableApp(flask.Flask):
             else:
                 raise TypeError("Could not determine a valid type for this"
                                 " configuration object: `{}`!".format(item))
+
+        # we just finished here, run the post configure callbacks
+        self._run_post_configure_callbacks(args)
 
     def _configure_from_json(self, item):
         """Load configuration from a JSON file.
@@ -249,3 +274,85 @@ class MultiStageConfigurableApp(flask.Flask):
                                      whitelist=whitelist)
 
         return self
+
+    def add_post_configure_callback(self, callback, run_once=False):
+        """Add a new callback to be run after every call to :meth:`configure`.
+
+        Functions run at the end of :meth:`configure` are given the
+        application's resulting configuration and the arguments passed to
+        :meth:`configure` in that order. As a note, this first argument will be
+        an immutable dictionary.
+
+        The return value of all registered callbacks is entirely ignored.
+
+        Callbacks are run in the order they are registered, but you should
+        never depend on another callback.
+
+        .. admonition:: The "Resulting" Configuration
+
+            The first argument to the callback is always the "resulting"
+            configuration from the call to :meth:`configure`. What this means
+            is you will get the Application's FROZEN configuration after the
+            call to :meth:`configure` finished. Moreover, this resulting
+            configuration will be an :class:`ImmutableDict`.
+
+            The purpose of a Post Configure callback is not to futher alter the
+            configuration, but rather to do lazy initialization for anything
+            that absolutely requires the configuration, so any attempt to alter
+            the configuration of the app has been made difficult intentionally!
+
+        Args:
+            callback (function): The function you wish to run after
+                :meth:`configure`. Will receive the application's current
+                configuration as the first arugment, and the same arguments
+                passed to :meth:`configure` as the second.
+
+        Kwargs:
+            run_once (bool): Should this callback run every time configure
+                is called? Or just once and be deregistered? Pass True to only
+                run it once.
+
+        Returns:
+            fleaker.base.BaseApplication: Returns itself for a fluent
+                interface.
+        """
+        if run_once:
+            self._post_configure_callbacks['single'].append(callback)
+        else:
+            self._post_configure_callbacks['multiple'].append(callback)
+
+        return self
+
+    def _run_post_configure_callbacks(self, configure_args):
+        """Run all post configure callbacks we have stored.
+
+        Functions are passed the configuration that resulted from the call to
+        :meth:`configure` as the first argument, in an immutable form; and are
+        given the arguments passed to :meth:`configure` for the second
+        argument.
+
+        Returns from callbacks are ignored in all fashion.
+
+        Args:
+            configure_args (list[object]): The full list of arguments passed to
+                :meth:`configure`.
+
+        Returns:
+            None: Does not return anything.
+        """
+        resulting_configuration = ImmutableDict(self.config)
+
+        # copy callbacks in case people edit them while running
+        multiple_callbacks = copy.copy(
+            self._post_configure_callbacks['multiple']
+        )
+        single_callbacks = copy.copy(self._post_configure_callbacks['single'])
+        # clear out the singles
+        self._post_configure_callbacks['single'] = []
+
+        for callback in multiple_callbacks:
+            callback(resulting_configuration, configure_args)
+
+        # now do the single run callbacks
+        for callback in single_callbacks:
+            callback(resulting_configuration, configure_args)

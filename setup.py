@@ -1,3 +1,4 @@
+# ~*~ coding: utf-8 ~*~
 """
 Fleaker
 -------
@@ -70,12 +71,15 @@ setup(name='fleaker',
           'Flask-Classful',
           'Flask-Login',
           'Flask-Marshmallow',
+          'arrow',
+          'blinker',
           'marshmallow',
           # @TODO: We gotta be missing some things
-          # pick one
-          'peewee',
-          'sqlalchemy',
       ],
+      extra_requires={
+          'peewee': ['peewee'],
+          'sqlalchemy': ['SQLAlchemy', 'Flask-SQLAlchemy'],
+      },
       classifiers=[
           'Development Status :: 2 - Pre-Alpha',
           'Environment :: Web Environment',

@@ -11,6 +11,8 @@ Basic tests for the main App instance.
 """
 
 import flask
+import pytest
+
 import fleaker
 
 
@@ -20,12 +22,12 @@ def _app_asserts(app):
     assert not app.debug
     assert app.import_name == __name__
 
-def test_basic_creation():
+def test_app_basic_creation():
     """Ensure we can create an app with no frills."""
     app = fleaker.App(__name__)
     _app_asserts(app)
 
-def test_creation_with_kwargs():
+def test_app_creation_with_kwargs():
     """Ensure we're passing kwargs in properly."""
     kwargs = {
         'static_url_path': '/mystatics',
@@ -45,9 +47,12 @@ def test_creation_with_kwargs():
         assert kwargs[key] == getattr(app, key)
 
 
-def test_basic_routes():
+@pytest.mark.parametrize("app", [
+    fleaker.App(__name__),
+    fleaker.App.create_app(__name__),
+])
+def test_app_basic_routes(app):
     """Ensure it still works like Flask."""
-    app = fleaker.App(__name__)
 
     @app.route('/test')
     def test_route():
@@ -57,3 +62,6 @@ def test_basic_routes():
     with app.test_client() as client:
         resp = client.get('/test')
         assert resp.data == b'content'
+
+# @TODO (tests): Tests to ensure that the Standard App is using all the mixins
+# properly; can be just isinstance or light func test
