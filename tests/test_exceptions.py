@@ -11,11 +11,12 @@ Provides tests for the custom Exceptions Fleaker implements.
 
 import json
 
+import mock
 import pytest
 
 from flask import request, session
 
-from fleaker import App, DEFAULT_DICT, MISSING, exceptions
+from fleaker import App, AppException, DEFAULT_DICT, MISSING, exceptions
 from fleaker._compat import urlencode
 
 SERVER_NAME = 'localhost'
@@ -212,16 +213,6 @@ def test_exception_handler_auto_rollback():
     """Ensure we automatically roll back any open transactions."""
 
 
-# Test the following:
-# - auto-redirect -- CHECK!
-# - flash messages + level -- CHECK!
-# - redirect + flashes -- CHECK!
-# - stub for ORM test? -- CHECK!
-# - registering the error handler
-# - setting of status code and message -- CHECK!
-# - basic throws -- CHECK!
-# - tests for automatic status code setting
-
 # please list all custom exceptions here for a quick test
 @pytest.mark.parametrize('spec', [
     (exceptions._FleakerBaseException, 'Base Exc', 401),
@@ -298,4 +289,151 @@ def test_exception_handler_overridden():
         assert resp.status_code == code
         assert resp.content == content
 
+
+def test_exception_handler_chained():
+    """Ensure a chain of error handlers with no eror page works fine."""
+
+    app = _create_app(register_error_handlers=False)
+    content = b'Success!'
+
+    @app.route('/test')
+    def throw_error():
+        """Just throw an exc for me."""
+        raise AppException('Something suddenly came up!')
+
+    def custom_errorhandler(exc):
+        """Return actual content."""
+        return content
+
+    AppException.register_error_handlers(app)
+    app.errorhandler(AppException)(custom_errorhandler)
+
+    with app.test_client() as client:
+        resp = client.get('/test')
+
+        assert resp.content == content
+
+
+def test_exception_auto_handler_registration():
+    """Ensure that the exception mixin automatically registers handlers."""
+    # TERRIBLE name for this class; fix it
+    app = ExceptionAwareApp('tests')
+
+    # error handlers should be registered by default
+    expected_handler = AppException.errorhandler_callback
+    assert app.error_handlers[None][AppException] == expected_handler
+
+
+def test_exception_auto_handler_explicit_registration():
+    """Ensure that the exception mixin doesn't register handlers when I tell it
+    not to.
+    """
+    # TERRIBLE name for this class; fix it
+    app = ExceptionAwareApp('tests', register_errorhandlers=False)
+
+    assert app.error_handlers == {}
+
+
+def test_exception_error_handler_callback():
+    """Ensure the error handler callback works on it's own."""
+    app = _create_app(register_error_handlers=False)
+
+    class ErrorPageException(AppException):
+        """Implementss a small error page for testing."""
+
+        def error_page(self):
+            return self.message
+
+    msg = 'foo'
+    level = 'danger'
+    code = 451
+    with app.test_client() as client:
+        exc = AppException(flash_message=msg, flash_level=level)
+        res = AppException.errorhandler_callback(exc)
+
+        assert res is None
+        assert '_flashes' in session
+        assert session['_flashes'].pop() == (level, msg)
+
+        exc = AppException(redirect='redir_method',
+                           redirect_args={'foo': 'bar'})
+        res = AppException.errorhandler_callback(exc)
+        # @TODO: Poke around and find the right value
+        assert False
+
+        exc = ErrorPageException(status_code=code)
+        res = AppException.errorhandler_callback(exc)
+        assert res == (msg, code)
+
+
+def test_exception_error_handler_custom_callback():
+    """Ensure a custom callback gets installed correctly."""
+    app = _create_app(register_error_handlers=False)
+
+    content = b'test'
+    flash_level = 'danger'
+
+    class TestException(AppException):
+        """Reimplement the errorhandler_callback."""
+
+        @classmethod
+        def errorhandler_callback(cls, exc):
+            """Return static data, please."""
+            return content
+
+    handler_mock = mock.patch.object(TestException,
+                                     'errorhandler_callback',
+                                     wraps=TestException.errorhandler_callback)
+
+    @app.route('/trigger_test')
+    def trigger():
+        """Trigger the exception we're testing."""
+        raise TestException()
+
+    @app.route('/trigger_app')
+    def trigger_stock():
+        """Trigger the stock exception to ensure it doesn't cause a run."""
+        raise AppException(flash_message=content, flash_level=flash_level)
+
+    @app.route('/trigger_exc')
+    def trigger_exc():
+        """Raise a standard exception."""
+        raise Exception("Fail")
+
+    # this should work
+    # TestException.register_errorhandler(app)
+    # this should fail
+    AppException.register_errorhandler(app)
+
+    with app.test_client() as client:
+        assert handler_mock.call_count == 0
+        res = client.get('/trigger_test')
+
+        assert res.content == content
+        assert handler_mock.call_count == 1
+
+        res = client.get('/trigger_app')
+
+        assert res.content != content
+        assert '_flashes' in session
+        assert session['_flashes'].pop() == (flash_level, content)
+        assert handler_mock.call_count == 1
+
+        res = client.get('/trigger_exc')
+        assert False  # PDB in and figure out what to do
+
+
 # @TODO: write a test for the error_handler method DIRECTLY
+
+# Test the following:
+# - auto-redirect -- CHECK!
+# - flash messages + level -- CHECK!
+# - redirect + flashes -- CHECK!
+# - stub for ORM test? -- CHECK!
+# - setting of status code and message -- CHECK!
+# - basic throws -- CHECK!
+# - registering the error handler -- CHECK (I think)!
+# - tests for automatic status code setting -- CHECK! (P sure)
+# - the error handler cb itself -- CHECK! (P sure)
+# - test an overridden error handler with the auto-register... -- CHECK! (P
+# sure)
