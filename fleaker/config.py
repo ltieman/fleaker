@@ -10,6 +10,7 @@ This module implements various utilities for configuring your Fleaker
 :license: BSD, see LICENSE for more details.
 """
 
+import copy
 import importlib
 import os
 import types
@@ -39,8 +40,14 @@ class MultiStageConfigurableApp(BaseApplication):
         All args and kwargs are the same as the
         :class:`fleaker.base.BaseApplication`.
         """
-        # A list of all callbacks we should run after configure finishes.
-        self._post_configure_callbacks = []
+        # A dict of all callbacks we should run after configure finishes. These
+        # are then separated by those that should run once, or run multiple
+        # times
+        # @TODO (QoL): There has to be a cleaner way to do this, do that
+        self._post_configure_callbacks = {
+            'multiple': [],
+            'single': [],
+        }
 
         super(MultiStageConfigurableApp, self).__init__(import_name,
                                                         **settings)
@@ -268,7 +275,7 @@ class MultiStageConfigurableApp(BaseApplication):
 
         return self
 
-    def add_post_configure_callback(self, callback):
+    def add_post_configure_callback(self, callback, run_once=False):
         """Add a new callback to be run after every call to :meth:`configure`.
 
         Functions run at the end of :meth:`configure` are given the
@@ -300,11 +307,19 @@ class MultiStageConfigurableApp(BaseApplication):
                 configuration as the first arugment, and the same arguments
                 passed to :meth:`configure` as the second.
 
+        Kwargs:
+            run_once (bool): Should this callback run every time configure
+                is called? Or just once and be deregistered? Pass True to only
+                run it once.
+
         Returns:
             fleaker.base.BaseApplication: Returns itself for a fluent
                 interface.
         """
-        self._post_configure_callbacks.append(callback)
+        if run_once:
+            self._post_configure_callbacks['single'].append(callback)
+        else:
+            self._post_configure_callbacks['multiple'].append(callback)
 
         return self
 
@@ -327,5 +342,17 @@ class MultiStageConfigurableApp(BaseApplication):
         """
         resulting_configuration = ImmutableDict(self.config)
 
-        for callback in self._post_configure_callbacks:
+        # copy callbacks in case people edit them while running
+        multiple_callbacks = copy.copy(
+            self._post_configure_callbacks['multiple']
+        )
+        single_callbacks = copy.copy(self._post_configure_callbacks['single'])
+        # clear out the singles
+        self._post_configure_callbacks['single'] = []
+
+        for callback in multiple_callbacks:
+            callback(resulting_configuration, configure_args)
+
+        # now do the single run callbacks
+        for callback in single_callbacks:
             callback(resulting_configuration, configure_args)

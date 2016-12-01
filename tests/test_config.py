@@ -11,7 +11,6 @@ Provides test for the common configuration options.
 
 import os
 
-import mock
 import pytest
 
 from werkzeug.datastructures import ImmutableDict
@@ -21,6 +20,8 @@ import fleaker
 from fleaker.config import MultiStageConfigurableApp
 
 import tests.configs.settings as settings
+
+from tests._compat import mock
 
 
 def _create_app():
@@ -210,7 +211,8 @@ def test_config_post_configure_callbacks():
     parent_mock = mock.Mock()
     parent_mock.m1, parent_mock.m2 = small_cb, evil_cb
 
-    assert not app._post_configure_callbacks
+    assert not app._post_configure_callbacks['single']
+    assert not app._post_configure_callbacks['multiple']
 
     app.add_post_configure_callback(evil_cb)
     app.add_post_configure_callback(small_cb)
@@ -226,3 +228,87 @@ def test_config_post_configure_callbacks():
         mock.call.m2(expected_config, (configure_args,)),
         mock.call.m1(expected_config, (configure_args,)),
     ])
+
+
+@pytest.mark.parametrize("run_once", [True, False])
+@pytest.mark.timeout(0.5)  # this is what will make the test pass or fail
+def test_config_post_configure_reschedules(run_once):
+    """Ensure that adding callbacks while running a callback doesn't infinite
+    loop us.
+    """
+    app = _create_app()
+
+    def self_scheduling_cb(dummy_config, dummy_args):
+        """Schedules himself to ensure infinite loops can't happen."""
+        app.add_post_configure_callback(self_scheduling_cb, run_once=run_once)
+
+    app.add_post_configure_callback(self_scheduling_cb, run_once=run_once)
+
+    app.configure({
+        'FOO': 'bar',
+    })
+
+
+@pytest.mark.parametrize("run_once", [True, False])
+def test_config_post_configure_add_run_once(run_once):
+    """Ensure we can add a `run_once` callback when running others."""
+    app = _create_app()
+
+    def run_once_cb(dummy_cfg, dummy_args):
+        """This will be run once, but we want to make sure we can schedule it
+        while running other callbacks.
+        """
+
+    def initial(dummy_cfg, dummy_args):
+        """This will be the first to run and will schedule the other."""
+        app.add_post_configure_callback(run_once_cb, run_once=True)
+
+    run_once_cb = mock.MagicMock(wraps=run_once_cb)
+    initial = mock.MagicMock(wraps=initial)
+
+    app.add_post_configure_callback(initial, run_once=run_once)
+
+    app.configure({
+        "FOO": "bar",
+    })
+
+    assert len(app._post_configure_callbacks['single']) == 1
+    # initial should have run, but not the run_once
+    assert initial.call_count == 1
+    assert run_once_cb.call_count == 0
+
+    app.configure({"BAR": "baz"})
+
+    # and now run once should have run
+    assert run_once_cb.call_count == 1
+
+
+def test_config_post_configure_run_multiple():
+    """Ensure callbacks run once when indicated."""
+    app = _create_app()
+
+    def runs_once(dummy_cfg, dummy_args):
+        """Runs only once."""
+
+    def runs_every_time(dummy_cfg, dummy_args):
+        """Runs on each call."""
+
+    runs_once = mock.MagicMock(wraps=runs_once)
+    runs_every_time = mock.MagicMock(wraps=runs_every_time)
+
+    app.add_post_configure_callback(runs_once, run_once=True)
+    app.add_post_configure_callback(runs_every_time)
+
+    app.configure({
+        'FOO': 'bar',
+    })
+
+    assert runs_once.call_count == 1
+    assert runs_every_time.call_count == 1
+
+    app.configure({
+        'FOO': 'bar',
+    })
+
+    assert runs_once.call_count == 1
+    assert runs_every_time.call_count == 2
