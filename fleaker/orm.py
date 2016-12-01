@@ -61,8 +61,9 @@ def _discover_ideal_backend(orm_backend):
             indicated they wanted to use.
 
     Returns:
-        str|missing.MissingSentinel: Returns a string for the ideal backend if
-            it found one, or :obj:`fleaker.MISSING` if we couldn't find one.
+        str|fleaker.missing.MissingSentinel: Returns a string for the ideal
+            backend if it found one, or :obj:`fleaker.MISSING` if we couldn't
+            find one.
 
     Raises:
         RuntimeError: Raised if no user provided ORM Backend is given and BOTH
@@ -156,6 +157,7 @@ class ORMAwareApp(BaseApplication):
     @TODO (orm): More docs about configuration and differences between SQLA and
                  PeeWee setup; refer users to the actual docs at the end.
     """
+
     @classmethod
     def post_create_app(cls, app, **settings):
         """Init the extension for our chosen ORM Backend, if possible.
@@ -295,8 +297,8 @@ class ORMAwareApp(BaseApplication):
                 :meth:`configure` function that triggered this callback. Just
                 like the above arg, we'll never use it, but we must accept it.
         """
-        # the database still isn't present, readd yourself for later to try
-        # again
+        # the database still isn't present, go ahead and register the callback
+        # again, so we can try later.
         if 'DATABASE' not in app.config:
             app.add_post_configure_callback(partial(cls._init_peewee_ext, app),
                                             run_once=True)
