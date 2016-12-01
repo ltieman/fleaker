@@ -312,3 +312,22 @@ def test_config_post_configure_run_multiple():
 
     assert runs_once.call_count == 1
     assert runs_every_time.call_count == 2
+
+
+@pytest.mark.skip(reason="There has not been enough time to implement this "
+                         "just yet. It should be an attempted ``configure`` "
+                         "that cannot find an Import Path.")
+def test_config_import_missing():
+    """Ensure that a proper error message is thrown if we can't find a config.
+    """
+
+
+@pytest.mark.skip(reason="There has not been enough time to implement this "
+                         "just yet. It should be an attempted ``configure`` "
+                         "that cannot 'find' an Import Path or file, but upon "
+                         "closer inspection, the file perms are wrong. Should "
+                         "throw a descriptive error.")
+def test_config_import_no_owner():
+    """Ensure that a helpful error message is thrown if we can't read a config
+    file.
+    """

@@ -127,7 +127,7 @@ class ORMAwareApp(BaseApplication):
         tom = my_user.select().where(UserModel.name == 'Tom Hanks').get()
         # boom! we've made two models, created a table, and saved a user!
 
-    This mixin supports two custom configuration options:
+    This mixin supports two custom app creation options:
         * ``orm_backend`` - a string that is either ``'peewee'`` or
           ``'sqlalchemy`` that can be used to tell Fleaker exactly which ORM
           you want.
