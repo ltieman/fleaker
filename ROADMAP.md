@@ -52,3 +52,4 @@ Thoughts and ideas:
 * Tasks.
   * `fleaker.click` and `fleaker.invoke` for common and reusable task runner
     things.
+* Tests for our compat stuff.
