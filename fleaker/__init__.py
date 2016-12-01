@@ -17,3 +17,4 @@ from .component import Component
 from .constants import DEFAULT_DICT, MISSING
 from .exceptions import AppException
 from .missing import MissingSentinel
+from .orm import db

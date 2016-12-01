@@ -18,7 +18,9 @@ if PY2:
     text_type = unicode
     string_types = (str, unicode)
     from urllib import urlencode
+    iteritems = lambda dictlike: dictlike.iteritems()
 else:
     text_type = str
     string_types = (str,)
     from urllib.parse import urlencode
+    iteritems = lambda dictlike: iter(dictlike.items())
