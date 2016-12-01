@@ -74,6 +74,10 @@ setup(name='fleaker',
           'arrow',
           'blinker',
           'marshmallow',
+          'marshmallow-jsonschema',
+          # @TODO Move these to extra_requires
+          'arrow',
+          'pendulum',
           # @TODO: We gotta be missing some things
       ],
       extra_requires={

@@ -50,3 +50,7 @@ Thoughts and ideas:
     classes, or something. Also just takes one or more blueprints.
 * Various util functions as needed.
 * Probably something to set Sentry up.
+* Tasks.
+  * `fleaker.click` and `fleaker.invoke` for common and reusable task runner
+    things.
+* Tests for our compat stuff.
