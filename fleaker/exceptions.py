@@ -15,7 +15,7 @@ from fleaker import DEFAULT_DICT, MISSING
 from fleaker.base import BaseApplication
 
 
-class _FleakerBaseException(Exception):
+class FleakerBaseException(Exception):
     """Base class for all Fleaker Exception Base Classes.
 
     This Exception should NEVER be used under ANY circumstances. It has two
@@ -31,9 +31,9 @@ class _FleakerBaseException(Exception):
     exception that an Application Developer is expected to import and reuse as
     their own Application's base exception.
 
-    We surface the :class:`_FleakerBaseException` to the end user as
+    We surface the :class:`FleakerBaseException` to the end user as
     :class:`AppException` because many of the features in
-    :class:`_FleakerBaseException` are intended for them to use, such as
+    :class:`FleakerBaseException` are intended for them to use, such as
     auto-redirects, auto-flash messages, etc. This gives them a very powerful
     base Exception to start building off of. We then reuse this same Exception
     base for :class:`FleakerException` because... why not? Even if Fleaker
@@ -114,7 +114,7 @@ class _FleakerBaseException(Exception):
         session if the exception bubbles to the top.
 
         Args:
-            exc (_FleakerBaseException): The exception that was thrown that we
+            exc (FleakerBaseException): The exception that was thrown that we
                 are to handle.
         """
         # @TODO (orm, exc): Implement this when the ORM/DB stuff is done
@@ -176,7 +176,7 @@ class _FleakerBaseException(Exception):
                 handler callback to.
 
         Returns:
-            fleaker.exceptions._FleakerBaseException: Returns the same class
+            fleaker.exceptions.FleakerBaseException: Returns the same class
                 this was called on, to provide a fluent interface (e.g.,
                 register error handlers on multiple apps in one method chain).
         """
@@ -236,7 +236,7 @@ class _FleakerBaseException(Exception):
         return None
 
 
-class FleakerException(_FleakerBaseException):
+class FleakerException(FleakerBaseException):
     """The base class for all specific exceptions of the Fleaker library
     itself.
 
@@ -246,7 +246,7 @@ class FleakerException(_FleakerBaseException):
     """
 
 
-class AppException(_FleakerBaseException):
+class AppException(FleakerBaseException):
     """The base class for all specific exceptions for an end User implemented
     application.
 
@@ -298,7 +298,7 @@ class ErrorAwareApp(BaseApplication):
     basis.
 
     For now, see the thorough documentation around :class:`AppException` and
-    :class`_FleakerBaseException` for more info.
+    :class`FleakerBaseException` for more info.
 
     This mixin accepts one custom app creation option:
         * ``register_errohandler`` - a boolean indicating if we want to
