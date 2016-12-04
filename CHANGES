@@ -1,0 +1,40 @@
+Fleaker Changelog
+=================
+
+Here you can see all changes between each release of Fleaker.
+
+Version 0.1.0
+-------------
+
+Initial internal, private alpha released on December 1st 2016, codename Patient
+Zero.
+
+New Features:
+
+- Standard Fleaker app as ``fleaker.App``.
+- Implemented the ``BaseApplication`` for Fleaker for development of all
+  Composable App Mixins.
+- Added the Fleaker Component with ``fleaker.Component``.
+- Added the Fleaker ``MultiStageConfigurableApp`` App Mixin for easier
+  configuration of Flask apps.
+- Added the ``fleaker.MISSING`` and ``fleaker.DEFAULT_DICT`` constants for use
+  as a standard and dict-like sentinels, respectively.
+  - See ``fleaker.missing`` for reusing the classes as your own sentinels.
+- Added ``fleaker.exceptions``, providing the ``FleakerException`` for catching
+  of Fleaker errors and the ``AppException`` for extension and reuse in end
+  developer applications.
+- Added JSON encoding support with ``fleaker.json`` and the standard
+  ``FleakerJSONEncoder`` encoder. Added the new ``FleakerJSONApp`` App mixin to
+  automatically set that JSON Encoder.
+- Added ORM support for PeeWee with the ``ORMAwareApp`` in ``fleaker.orm``.
+  Automatically discovers and sets up PeeWee for you!
+  - Get started by importing ``db`` from ``fleaker`` and configuring PeeWee as
+    normal!
+- Added Marshmallow support in ``fleaker.marshmallow``, including custom fields
+  in ``fleaker.marshmallow.fields`` for Arrow, Pendulum, libphonenumber, and
+  PeeWee Foreign Key objects; a base schmea to extend off of in
+  ``fleaker.marshmallow.schema``; and some constants for easy construction of
+  schema in ``fleaker.marshmallow.constants``.
+- Added a Marshmallow schema for converting OTHER Marshmallow schema into JSON
+  schema with the ``FleakerJSONSchema`` in ``fleaker.marshmallow.json_schema``,
+  see docs for usage info.
