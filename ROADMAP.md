@@ -43,7 +43,6 @@ Thoughts and ideas:
 * Setup the function that registers logging.
   * Configured via config values? Only if params are missing, like it is now.
   * Make it part of `App.create_app`.
-* Create `App.create_app`, which is the magic app factory for you.
 * Blueprint registration.
   * `App.register_blueprints(import_path)` searches import path and attempts to
     automatically register blueprints for you searching for named files or
