@@ -3,6 +3,19 @@ Fleaker Changelog
 
 Here you can see all changes between each release of Fleaker.
 
+Version 0.1.1
+-------------
+
+Bug fixes around Marshmallow.
+
+Bug fixes:
+
+- The Marshmallow extension is now created and available under
+  ``fleaker.marshmallow`` as ``marsh``. The built-in ``Schema`` class extends
+  this.
+- Added ``MarshmallowAwareApp`` to properly init ``Flask-Marshmallow``. Added
+  to standard ``App``.
+
 Version 0.1.0
 -------------
 
