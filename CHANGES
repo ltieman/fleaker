@@ -28,6 +28,8 @@ New Features:
   automatically set that JSON Encoder.
 - Added ORM support for PeeWee with the ``ORMAwareApp`` in ``fleaker.orm``.
   Automatically discovers and sets up PeeWee for you!
+  - Get started by importing ``db`` from ``fleaker`` and configuring PeeWee as
+    normal!
 - Added Marshmallow support in ``fleaker.marshmallow``, including custom fields
   in ``fleaker.marshmallow.fields`` for Arrow, Pendulum, libphonenumber, and
   PeeWee Foreign Key objects; a base schmea to extend off of in
