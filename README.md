@@ -31,8 +31,15 @@ def create_app():
     app = App.create_app(__name__)
 
     # configure from settings module, and then the OS environment
-    app.configure('.settings', os.environ)
+    app.configure('settings', os.environ)
+
+    return app
+
+if __name__ == '__main__':
+    create_app().run(host='0.0.0.0', port=5000)
 ```
+
+Run the above code and you can access your Flask app on: `localhost:500`!
 
 
 ## Development
