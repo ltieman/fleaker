@@ -13,11 +13,12 @@
 from .base import BaseApplication
 from .config import MultiStageConfigurableApp
 from .json import FleakerJSONApp
+from .marshmallow import MarshmallowAwareApp
 from .orm import ORMAwareApp
 
 
-class App(MultiStageConfigurableApp, FleakerJSONApp, ORMAwareApp,
-          BaseApplication):
+class App(MultiStageConfigurableApp, MarshmallowAwareApp, FleakerJSONApp,
+          ORMAwareApp, BaseApplication):
     """The ``App`` class is the primary entrypoint for using Fleaker and is
     a simple WSGI Application. In it's simplest form, you can think of
     ``fleaker.App`` as roughly equivalent to ``flask.Flask``. On top of

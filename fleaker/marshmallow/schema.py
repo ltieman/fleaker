@@ -1,10 +1,12 @@
 # ~*~ coding: utf-8 ~*~
 """Module that defines a strict but fair base Marshmallow schema."""
 
-from marshmallow import ValidationError, Schema as _Schema, validates_schema
+from marshmallow import ValidationError, validates_schema
+
+from .extension import marsh
 
 
-class Schema(_Schema):
+class Schema(marsh.Schema):
     """Base schema that defines sensible default rules for Marshmallow.
 
     The single most important thing that this module provides is strict
