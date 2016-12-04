@@ -27,7 +27,7 @@ New Features:
   ``FleakerJSONEncoder`` encoder. Added the new ``FleakerJSONApp`` App mixin to
   automatically set that JSON Encoder.
 - Added ORM support for PeeWee with the ``ORMAwareApp`` in ``fleaker.orm``.
-  Automatically discovers and sets up PeeWee for you! 
+  Automatically discovers and sets up PeeWee for you!
 - Added Marshmallow support in ``fleaker.marshmallow``, including custom fields
   in ``fleaker.marshmallow.fields`` for Arrow, Pendulum, libphonenumber, and
   PeeWee Foreign Key objects; a base schmea to extend off of in
