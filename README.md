@@ -18,7 +18,7 @@ built.
 
 ## Usage
 
-The main way to begin using Fleaker is simply to import: `fleaker.app` and
+The main way to begin using Fleaker is simply to import: `fleaker.App` and
 then call `create_app`, like so:
 
 ```python
