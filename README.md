@@ -1,5 +1,40 @@
 # Fleaker
 
+Fleaker makes Flask devlopment easier by including glue and customizations for
+popular support libraries such as:
+
+* Marshmallow
+* PeeWee
+
+In addition to implementing improved Flask apps with more powerful:
+
+* Configuration
+* Components
+* Exceptions
+
+All in all, Fleaker makes developing for Flask more like developing for Python:
+it's batteries included and you'll always be surprised with what's already
+built.
+
+## Usage
+
+The main way to begin using Fleaker is simply to import: `fleaker.app` and
+then call `create_app`, like so:
+
+```python
+import os
+
+from fleaker import App
+
+
+def create_app():
+    app = App.create_app(__name__)
+
+    # configure from settings module, and then the OS environment
+    app.configure('.settings', os.environ)
+```
+
+
 ## Development
 
 To lint, run this:
