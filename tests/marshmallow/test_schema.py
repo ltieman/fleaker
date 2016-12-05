@@ -5,6 +5,11 @@ import pytest
 
 from marshmallow import ValidationError, fields
 
+try:
+    import peewee
+except ImportError:
+    peewee = None
+
 from fleaker.marshmallow import Schema
 
 
@@ -47,3 +52,31 @@ def test_contextual_strict_setting():
 
     # It can also be toggled via the context, which some might find useful
     assert not SchemaTest(context={'strict': False}).strict
+
+
+@pytest.mark.skipif(peewee is None,
+                    reason=("Some test envs don't have peewee."))
+def test_make_instance():
+    """Ensure that the schema's make instance works properly."""
+    from peewee import Model, CharField
+
+    class User(Model):
+        name = CharField(max_length=255)
+
+    class UserSchema(Schema):
+        name = fields.String()
+
+        class Meta:
+            model = User
+
+    data = {'name': 'Bob Blah'}
+    user = UserSchema.make_instance(data)
+
+    assert isinstance(user, User)
+    assert user.name == data['name']
+
+
+def test_make_instance_fails():
+    """Ensure that make_instance fail's if no model is specified."""
+    with pytest.raises(AttributeError):
+        SchemaTest.make_instance({'name': 'Bob Blah'})
