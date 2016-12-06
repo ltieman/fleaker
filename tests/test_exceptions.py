@@ -59,11 +59,11 @@ def _create_app(register_error_handlers=True):
 
     @app.route('/base_exc')
     def base_exception():
-        """Raise a _FleakerBaseException with some custom parameters."""
+        """Raise a FleakerBaseException with some custom parameters."""
         request_args = request.args.to_dict()
         args = request_args.pop('redirect_args', '{}')
         args = json.loads(args)
-        raise exceptions._FleakerBaseException("Testing base exception",
+        raise exceptions.FleakerBaseException("Testing base exception",
                                                redirect_args=args, **request_args)
 
     @app.route('/redirected')
@@ -77,8 +77,8 @@ def _create_app(register_error_handlers=True):
             exceptions.AppException.errorhandler_callback)
         app.errorhandler(exceptions.FleakerException)(
             exceptions.FleakerException.errorhandler_callback)
-        app.errorhandler(exceptions._FleakerBaseException)(
-            exceptions._FleakerBaseException.errorhandler_callback)
+        app.errorhandler(exceptions.FleakerBaseException)(
+            exceptions.FleakerBaseException.errorhandler_callback)
 
     return app
 
@@ -104,7 +104,7 @@ def _redir_url(fragment, query_args=''):
 
 # please list all custom exceptions here for a quick test
 @pytest.mark.parametrize('spec', [
-    (exceptions._FleakerBaseException, 'Base Exc', 401),
+    (exceptions.FleakerBaseException, 'Base Exc', 401),
     (exceptions.FleakerException, 'Fleaker Exc', 402),
     (exceptions.AppException, 'App Exc', 403),
 ])
@@ -138,7 +138,7 @@ def test_exceptions_basic_args(spec):
 
 # @TODO (test): Combine with the flash instantiation test
 @pytest.mark.parametrize('spec', [
-    (exceptions._FleakerBaseException, '/foo', {'bar': 1},),
+    (exceptions.FleakerBaseException, '/foo', {'bar': 1},),
     (exceptions.FleakerException, '/bar', {'baz': 1},),
     (exceptions.AppException, '/baz', {'qux': 1},),
 ])
@@ -154,7 +154,7 @@ def test_exception_create_with_redirect(spec):
 
 
 @pytest.mark.parametrize('spec', [
-    (exceptions._FleakerBaseException, '/base_exc',),
+    (exceptions.FleakerBaseException, '/base_exc',),
     (exceptions.FleakerException, '/fleaker_exc',),
     (exceptions.AppException, '/app_exc',),
 ])
@@ -181,7 +181,7 @@ def test_exception_handler_auto_redirect(spec):
 
 
 @pytest.mark.parametrize('spec', [
-    (exceptions._FleakerBaseException, 'Joy!', 'success',),
+    (exceptions.FleakerBaseException, 'Joy!', 'success',),
     (exceptions.FleakerException, 'Sorrow!', 'danger',),
     (exceptions.AppException, 'Mixed feelings!', 'warning',),
 ])
@@ -200,7 +200,7 @@ def test_exception_create_with_flash(spec):
 
 
 @pytest.mark.parametrize('spec', [
-    (exceptions._FleakerBaseException, '/base_exc', 'Joy!', 'success',),
+    (exceptions.FleakerBaseException, '/base_exc', 'Joy!', 'success',),
     (exceptions.FleakerException, '/fleaker_exc', 'Sorrow!', 'danger',),
     (exceptions.AppException, '/app_exc', 'Mixed feelings!', 'warning',),
 ])
@@ -224,7 +224,7 @@ def test_exception_handler_auto_flash(spec):
 
 
 @pytest.mark.parametrize('spec', [
-    (exceptions._FleakerBaseException, '/base_exc', 'Joy', 'success',),
+    (exceptions.FleakerBaseException, '/base_exc', 'Joy', 'success',),
     (exceptions.FleakerException, '/fleaker_exc', 'Sorrow', 'danger',),
     (exceptions.AppException, '/app_exc', 'Mixed!', 'warning',),
 ])
@@ -259,7 +259,7 @@ def test_exception_handler_auto_rollback():
 
 
 @pytest.mark.parametrize('exc_type', [
-    exceptions._FleakerBaseException,
+    exceptions.FleakerBaseException,
     exceptions.FleakerException,
     exceptions.AppException,
 ])
