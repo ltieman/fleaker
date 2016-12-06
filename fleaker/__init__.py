@@ -16,5 +16,6 @@ from .app import App
 from .component import Component
 from .constants import DEFAULT_DICT, MISSING
 from .exceptions import AppException
+from .marshmallow import Schema
 from .missing import MissingSentinel
 from .orm import db
