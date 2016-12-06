@@ -3,6 +3,16 @@ Fleaker Changelog
 
 Here you can see all changes between each release of Fleaker.
 
+Version 0.1.3
+-------------
+
+...More bug fixes for... Marshmallow... Think we got it this time!
+
+Bug Fixes:
+
+- The ``fleaker.marshmallow.fields`` package is now properly installed. NOW all
+  of Marshmallow should be in the system.
+
 Version 0.1.2
 -------------
 
