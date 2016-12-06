@@ -30,7 +30,7 @@ Example:
                 json_schema_filename = 'user.json'
 
         # You can dump the schema to a file in a folder
-        json_schema = FleakerJSONSchema.write_schema_to_file(
+        json_schema = JSONSchema.write_schema_to_file(
             # This library doesn't care if the schema has been initialized
             UserSchema,
             # The folder to write this schema to
@@ -47,10 +47,10 @@ Example:
         # use the file object further, a file pointer can be passed to the
         # creation method.
         with open('user_schema.json', 'w') as fp:
-            FleakerJSONSchema.write_schema_to_file(UserSchema, file_pointer=fp)
+            JSONSchema.write_schema_to_file(UserSchema, file_pointer=fp)
 
         # Maybe you just want the schema in dict form. Super easy.
-        json_schema = FleakerJSONSchema.generate_json_schema(
+        json_schema = JSONSchema.generate_json_schema(
             # For all creation methods in this module can be loaded either by
             # the instance/class of the schema or by passing a Python path to
             # it, like so.
@@ -89,7 +89,7 @@ TYPE_MAP.update({
 })
 
 
-class FleakerJSONSchema(JSONSchema):
+class JSONSchema(JSONSchema):
     """Marshmallow schema that can be used to generate JSON schemas."""
 
     @classmethod

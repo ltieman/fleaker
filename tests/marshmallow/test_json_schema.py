@@ -9,7 +9,7 @@ import pytest
 from marshmallow import fields
 
 from fleaker.marshmallow import (
-    FleakerJSONSchema, Schema, PhoneNumberField, PendulumField, ArrowField,
+    JSONSchema, Schema, PhoneNumberField, PendulumField, ArrowField,
     ForeignKeyField, REQUIRED, STR_REQUIRED
 )
 
@@ -33,7 +33,7 @@ class UserSchema(Schema):
 ))
 def test_generate_json_schema(schema):
     """Ensure that a JSON Schema can be generated from a Marshmallow schema."""
-    json_schema = FleakerJSONSchema.generate_json_schema(schema)
+    json_schema = JSONSchema.generate_json_schema(schema)
     schema = UserSchema()
 
     for key, field in schema.fields.items():
@@ -48,7 +48,7 @@ def test_generate_json_schema(schema):
 ))
 def test_write_json_schema_to_file(schema, folder, file_pointer):
     """Ensure that JSON schemas can be written to a file."""
-    FleakerJSONSchema().write_schema_to_file(
+    JSONSchema().write_schema_to_file(
         schema,
         file_pointer=file_pointer,
         folder=folder,
@@ -70,4 +70,4 @@ def test_write_json_schema_to_file(schema, folder, file_pointer):
 def test_only_marshmallow_schemas_allowed(schema):
     """Ensure that only Marshmallow schemas are allowed."""
     with pytest.raises(TypeError):
-        FleakerJSONSchema.write_schema_to_file(schema)
+        JSONSchema.write_schema_to_file(schema)

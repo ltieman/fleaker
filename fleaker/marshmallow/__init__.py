@@ -57,7 +57,7 @@ Usage:::
 
 from .constants import REQUIRED, STR_REQUIRED
 from .extension import MarshmallowAwareApp, marsh
-from .json_schema import FleakerJSONSchema
+from .json_schema import JSONSchema
 from .schema import Schema
 from .fields import ForeignKeyField
 
