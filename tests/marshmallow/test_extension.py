@@ -1,6 +1,6 @@
 # ~*~ coding: utf-8 ~*~
 """
-tests.marshmallow.test_marshmallow_app
+tests.marshmallow.test_extension
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Tests for the :class:`MarshmallowAwareApp` to ensure that it will properly
