@@ -64,6 +64,7 @@ setup(name='fleaker',
       packages=[
           'fleaker',
           'fleaker.marshmallow',
+          'fleaker.marshmallow.fields',
       ],
       zip_safe=False,
       long_description=__doc__,
