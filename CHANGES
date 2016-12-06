@@ -3,6 +3,21 @@ Fleaker Changelog
 
 Here you can see all changes between each release of Fleaker.
 
+Version 0.1.2
+-------------
+
+More bug fixes for Marshmallow.
+
+Bug fixes:
+
+- The ``marshmallow`` package has been added to ``setup.py`` and so
+  ``fleaker.marshmallow`` should install properly.
+- ``fleaker.marshmallow.Schema`` has been promoted to be top-level and is now
+  available at ``fleaker.Schema``, use it as your base schema for Marshmallow
+  things.
+- ``_FleakerBaseException`` is now ``FleakerBaseException`` in case you need to
+  catch all Fleaker derived exceptions.
+
 Version 0.1.1
 -------------
 
