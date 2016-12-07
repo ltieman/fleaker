@@ -3,8 +3,10 @@ Fleaker Changelog
 
 Here you can see all changes between each release of Fleaker.
 
-Development
------------
+Version 0.1.4
+-------------
+
+Make the ORM a tad easier to use... more work on this is coming soon!
 
 - Added an explicit top level model to ``fleaker.orm`` for both the base Peewee
   and SQLAlchemy models. The Peewee Model is: ``fleaker.orm.PeeweeModel`` and
