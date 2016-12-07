@@ -30,19 +30,39 @@ try:
     import peewee
     from playhouse import flask_utils
     _PEEWEE_EXT = flask_utils.FlaskDB()
+    # @TODO (orm): Figure out how to get rid of this. I would ideally like
+    # a dedicated proxy of ``fleaker.orm.Model`` that will dynamically figure
+    # out which base class it should pull from at runtime; if that's doable. If
+    # not, we'll add larger base models for each and you can just import those,
+    # won't be a big deal.
+    PeeweeModel = _PEEWEE_EXT.Model
 except ImportError:
     peewee = MISSING
     flask_utils = MISSING
     _PEEWEE_EXT = MISSING
+    # @TODO (orm): Make this equal to a special util class that evaluates to
+    # Falsey like a MISSING, but when called raises an error pointing this out
+    # to the user
+    PeeweeModel = MISSING
 
 try:
     import sqlalchemy
     import flask_sqlalchemy
     _SQLA_EXT = flask_sqlalchemy.SQLAlchemy()
+    # @TODO (orm): Figure out how to get rid of this. I would ideally like
+    # a dedicated proxy of ``fleaker.orm.Model`` that will dynamically figure
+    # out which base class it should pull from at runtime; if that's doable. If
+    # not, we'll add larger base models for each and you can just import those,
+    # won't be a big deal.
+    SqlalchemyModel = _SQLA_EXT.Model
 except ImportError:
     sqlalchemy = MISSING
     flask_sqlalchemy = MISSING
     _SQLA_EXT = MISSING
+    # @TODO (orm): Make this equal to a special util class that evaluates to
+    # Falsey like a MISSING, but when called raises an error pointing this out
+    # to the user
+    SqlalchemyModel = MISSING
 
 _PEEWEE_BACKEND = 'peewee'
 _SQLALCHEMY_BACKEND = 'sqlalchemy'

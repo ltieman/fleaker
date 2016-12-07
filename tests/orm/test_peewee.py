@@ -34,17 +34,24 @@ def _create_app(backend='peewee'):
     return app
 
 
-def _create_model_class():
+def _create_model_class(class_=None):
     """Helper function to create a model class for testing, so we can ensure it
     gets redefined every time.
 
     The model we create will have two fields: name and id. Name is a VARCHAR of
     max length 32.
 
+    Args:
+        class_ (type|None): The Base class for the model. Uses
+            ``fleaker.db.Model`` if nothing is provided.
+
     Returns:
         type: Returns the newly created BasicModel.
     """
-    class BasicModel(fleaker.db.Model):
+    if class_ is None:
+        class_ = fleaker.db.Model
+
+    class BasicModel(class_):
         name = peewee.CharField(max_length=32)
     return BasicModel
 
@@ -79,7 +86,7 @@ def test_orm_peewee_basic_setup(mock_init_peewee_ext, sqlite_db):
     assert fleaker.db._app is app
 
     assert isinstance(fleaker.db._get_current_object(), flask_utils.FlaskDB)
-    assert isinstance(fleaker.db.database, peewee.SqliteDatabase)
+    assert isinstance(fleaker.db.database.obj, peewee.SqliteDatabase)
     assert not hasattr(fleaker.db, 'session')  # ensure it's not SQLA
 
     model = _create_model_class()
@@ -132,7 +139,7 @@ def test_orm_peewee_init_reschedules(mock_init_peewee_ext):
     assert fleaker.db._app is app
     assert fleaker.db.database.database == SQLITE_DATABASE_NAME
     assert isinstance(fleaker.db._get_current_object(), flask_utils.FlaskDB)
-    assert isinstance(fleaker.db.database, peewee.SqliteDatabase)
+    assert isinstance(fleaker.db.database.obj, peewee.SqliteDatabase)
 
     # make sure it's not called AGAIN
     app.configure({
@@ -156,18 +163,31 @@ def test_orm_peewee_basic_mysql():
         fleaker.db.database.connect()
 
 
-def test_orm_peewee_basic_model(sqlite_db):
+@pytest.mark.parametrize("model_class", [
+    None,
+    fleaker.orm.PeeweeModel,
+])
+def test_orm_peewee_basic_model(model_class, sqlite_db):
     """Ensure we can extend our DB class and implement new models."""
     app = _create_app()
+    app.configure({
+        'DATABASE': SQLITE_DB_CONFIG,
+    })
 
-    model = _create_model_class()
+    model = _create_model_class(class_=model_class)
 
-    name = 'Bruce'
-    tester = model(name=name)
-    tester.save()
+    with app.app_context():
+        name = 'Bruce'
+        tester = model(name=name)
+        tester.save()
 
     assert tester.id
     assert tester.name == name
+
+    with app.app_context():
+        inst = model.select().where(model.name ==  name).get()
+        assert inst == tester
+
     # create a new model extended off the proper property and ensure we can hit
     # sqlite
     # @TODO: Make sure we cleanup sqlite db's!
@@ -184,7 +204,7 @@ def test_orm_peewee_per_request_connections():
 
     assert fleaker.db._app is app
     assert isinstance(fleaker.db._get_current_object(), flask_utils.FlaskDB)
-    assert isinstance(fleaker.db.database, peewee.SqliteDatabase)
+    assert isinstance(fleaker.db.database.obj, peewee.SqliteDatabase)
 
     assert not fleaker.db.database._local.conn
 
@@ -204,6 +224,6 @@ def test_orm_peewee_creation_with_explicit_db():
     assert app.config['DATABASE'] == SQLITE_DB_CONFIG
     assert fleaker.db._app is app
     assert isinstance(fleaker.db._get_current_object(), flask_utils.FlaskDB)
-    assert isinstance(fleaker.db.database, peewee.SqliteDatabase)
+    assert isinstance(fleaker.db.database.obj, peewee.SqliteDatabase)
 
     # @TODO (tests): should likely query in here
