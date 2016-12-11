@@ -3,6 +3,7 @@
 .~lock.*
 .ropeproject
 test_db.db
+docs/_build
 
 # for pytest
 .cache/*
