@@ -54,6 +54,8 @@ class FleakerJSONEncoder(flask.json.JSONEncoder):
        This has been the default JSONEncoder since Fleaker's inception.
     """
 
+    # @TODO (json, doc): Fix links in above; intersphinx to libs.
+
     def default(self, obj):
         """Encode individual objects into their JSON representation.
 
@@ -101,9 +103,13 @@ class FleakerJSONEncoder(flask.json.JSONEncoder):
 class FleakerJSONApp(BaseApplication):
     """App class mixin that defines a custom JSON encoder.
 
+    Please see :ref:`json-encoding` for more details.
+
     Attributes:
         json (flask.json): An alias to ``flask.json`` so it can be accessed via
             the app because that's convenient.
+        json_encoder (json.JSONEncoder): The JSON encoder that the App should
+            use by default.
 
     .. versionadded:: 0.1.0
        This has been around since before Fleaker was made public.
@@ -112,5 +118,7 @@ class FleakerJSONApp(BaseApplication):
     def __init__(self, import_name, **kwargs):
         super(FleakerJSONApp, self).__init__(import_name, **kwargs)
 
+        # @TODO (json): Should be class level to make this easier to override.
         self.json_encoder = FleakerJSONEncoder
+
         self.json = flask.json

@@ -10,6 +10,9 @@ Attributes:
         safely use it like you would expect!
     MISSING (fleaker.missing.MissingSentinel): This is a sentinel value that
         can be used when ``None`` is a valid value for the variable.
+
+:copyright: (c) 2016 by Croscon Consulting, see AUTHORS for more details.
+:license: BSD, see LICENSE for more details.
 """
 
 from .missing import MissingDictSentinel, MissingSentinel

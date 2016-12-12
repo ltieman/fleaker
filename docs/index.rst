@@ -11,6 +11,8 @@ tutorial-style docs for Fleaker's various features.
    :maxdepth: 2
 
    building-your-own-app
+   components
+   orm
 
 API Reference
 -------------
