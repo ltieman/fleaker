@@ -25,7 +25,8 @@ from .base import BaseApplication
 
 class MultiStageConfigurableApp(BaseApplication):
     """The :class:`MultiStageConfigurableApp` is a mixin used to provide the
-    primary ``configure`` method used to configure a `Fleaker` :class:`App`.
+    primary :meth:`configure` method used to configure a ``Fleaker``
+    :class:`~fleaker.App`.
 
     .. versionadded:: 0.1.0
        The :class:`MultiStageConfigurableApp` class has existed since Fleaker
@@ -63,6 +64,7 @@ class MultiStageConfigurableApp(BaseApplication):
         example:
 
         .. code:: python
+
             from application import default_config
             app.configure(default_config, os.environ, '.secrets')
 
@@ -76,24 +78,24 @@ class MultiStageConfigurableApp(BaseApplication):
 
         * ``string`` - if the source is a ``str``, we will assume it is a file
           or module that should be loaded. If the file ends in ``.json``, then
-          :method:`flask.Config.from_json` is used; if the file ends in ``.py``
-          or ``.cfg``, then :method:`flask.Config.from_pyfile` is used; if the
+          :meth:`flask.Config.from_json` is used; if the file ends in ``.py``
+          or ``.cfg``, then :meth:`flask.Config.from_pyfile` is used; if the
           module has any other extension we assume it is an import path, import
-          the module and pass that to :method:`flask.Config.from_object`. See
+          the module and pass that to :meth:`flask.Config.from_object`. See
           below for a few more semantics on module loading.
         * ``dict-like`` - if the source is ``dict-like``, then
-          :method:`flask.Config.from_mapping` will be used. ``dict-like`` is
+          :meth:`flask.Config.from_mapping` will be used. ``dict-like`` is
           defined as anything implementing an ``items`` method that returns
           a tuple of ``key``, ``val``.
         * ``class`` or ``module`` - if the source is an uninstantiated
-          ``class`` or ``module``, then :method:`flask.Config.from_object` will
+          ``class`` or ``module``, then :meth:`flask.Config.from_object` will
           be used.
 
         Just like Flask's standard configuration, only uppercased keys will be
         loaded into the config.
 
         If the item we are passed is a ``string`` and it is determined to be
-        a possilbe Python module, then a leading ``.`` is relevant. If
+        a possible Python module, then a leading ``.`` is relevant. If
         a leading ``.`` is provided, we assume that the module to import is
         located in the current package and operate as such; if it begins with
         anything else we assume the import path provided is absolute. This
@@ -101,18 +103,19 @@ class MultiStageConfigurableApp(BaseApplication):
         or in another package.
 
         Args:
-            *args (object): Any object you want us to try to configure from.
+            *args (object):
+                Any object you want us to try to configure from.
 
-        Kwargs:
-            whitelist_keys_from_mappings (bool): Should we whitelist the keys
-                we pull from mappings? Very useful if you're passing in an
-                entire OS environ and you want to omit things like
-                ``LESSPIPE``. If no whitelist is provided, we use the
-                pre-existing config keys as a whitelist.
-            whitelist (list[str]): An explicit list of keys that should be
-                allowed. If provided and ``whitelist_keys`` is true, we will
-                use that as our whitelist instead of pre-existing app config
-                keys.
+        Keyword Args:
+            whitelist_keys_from_mappings (bool):
+                Should we whitelist the keys we pull from mappings? Very useful
+                if you're passing in an entire OS ``environ`` and you want to
+                omit things like ``LESSPIPE``. If no whitelist is provided, we
+                use the pre-existing config keys as a whitelist.
+            whitelist (list[str]):
+                An explicit list of keys that should be allowed. If provided
+                and ``whitelist_keys`` is ``True``, we will use that as our
+                whitelist instead of pre-existing app config keys.
         """
         whitelist_keys_from_mappings = kwargs.get(
             'whitelist_keys_from_mappings', False
@@ -159,10 +162,12 @@ class MultiStageConfigurableApp(BaseApplication):
         resulting object and pass that to ``_configure_from_object``.
 
         Args:
-            items (str): The path to the JSON file to load.
+            items (str):
+                The path to the JSON file to load.
 
         Returns:
-            fleaker.App: Returns itself.
+            fleaker.App:
+                Returns itself.
         """
         self.config.from_json(item)
 
@@ -176,10 +181,12 @@ class MultiStageConfigurableApp(BaseApplication):
         ``_configure_from_object``.
 
         Args:
-            items (str): The path to the Python file to load.
+            items (str):
+                The path to the Python file to load.
 
         Returns:
-            fleaker.App: Returns itself.
+            fleaker.App:
+                Returns itself.
         """
         self.config.from_pyfile(item)
 
@@ -193,10 +200,12 @@ class MultiStageConfigurableApp(BaseApplication):
         ``_configure_from_object``.
 
         Args:
-            item (str): A string pointing to a valid import path.
+            item (str):
+                A string pointing to a valid import path.
 
         Returns:
-            fleaker.App: Returns itself.
+            fleaker.App:
+                Returns itself.
         """
         package = None
         if item[0] == '.':
@@ -213,19 +222,22 @@ class MultiStageConfigurableApp(BaseApplication):
         """Configure from a mapping, or dict, like object.
 
         Args:
-            item (dict): A dict-like object that we can pluck values from.
+            item (dict):
+                A dict-like object that we can pluck values from.
 
-        Kwargs:
-            whitelist_keys (bool): Should we whitelist the keys before adding
-                them to the configuration? If no whitelist is provided, we use
-                the pre-existing config keys as a whitelist.
-            whitelist (list[str]): An explicit list of keys that should be
-                allowed. If provided and ``whitelist_keys`` is true, we will
-                use that as our whitelist instead of pre-existing app config
-                keys.
+        Keyword Args:
+            whitelist_keys (bool):
+                Should we whitelist the keys before adding them to the
+                configuration? If no whitelist is provided, we use the
+                pre-existing config keys as a whitelist.
+            whitelist (list[str]):
+                An explicit list of keys that should be allowed. If provided
+                and ``whitelist_keys`` is true, we will use that as our
+                whitelist instead of pre-existing app config keys.
 
         Returns:
-            fleaker.App: Returns itself.
+            fleaker.App:
+                Returns itself.
         """
         if whitelist is None:
             whitelist = self.config.keys()
@@ -241,10 +253,12 @@ class MultiStageConfigurableApp(BaseApplication):
         """Configure from any Python object based on it's attributes.
 
         Args:
-            item (object): Any other Python object that has attributes.
+            item (object):
+                Any other Python object that has attributes.
 
         Returns:
-            fleaker.App: Returns itself.
+            fleaker.App:
+                Returns itself.
         """
         self.config.from_object(item)
 
@@ -254,21 +268,24 @@ class MultiStageConfigurableApp(BaseApplication):
         """Configure from the entire set of available environment variables.
 
         This is really a shorthand for grabbing ``os.environ`` and passing to
-        :method:`_configure_from_mapping`.
+        :meth:`_configure_from_mapping`.
 
         As always, only uppercase keys are loaded.
 
-        Kwargs:
-            whitelist_keys (bool): Should we whitelist the keys by only pulling
-                those that are already present in the config? Useful for
-                avoiding adding things like ``LESSPIPE`` to your app config.
-            whitelist (list[str]): An explicit list of keys that should be
-                allowed. If provided and ``whitelist_keys`` is true, we will
-                use that as our whitelist instead of pre-existing app config
-                keys.
+        Keyword Args:
+            whitelist_keys (bool):
+                Should we whitelist the keys by only pulling those that are
+                already present in the config? Useful for avoiding adding
+                things like ``LESSPIPE`` to your app config. If no whitelist is
+                provided, we use the current config keys as our whitelist.
+            whitelist (list[str]):
+                An explicit list of keys that should be allowed. If provided
+                and ``whitelist_keys`` is true, we will use that as our
+                whitelist instead of pre-existing app config keys.
 
         Returns:
-            fleaker.App: Returns itself.
+            fleaker.base.BaseApplication:
+                Returns itself.
         """
         self._configure_from_mapping(os.environ, whitelist_keys=whitelist_keys,
                                      whitelist=whitelist)
@@ -280,8 +297,8 @@ class MultiStageConfigurableApp(BaseApplication):
 
         Functions run at the end of :meth:`configure` are given the
         application's resulting configuration and the arguments passed to
-        :meth:`configure` in that order. As a note, this first argument will be
-        an immutable dictionary.
+        :meth:`configure`, in that order. As a note, this first argument will
+        be an immutable dictionary.
 
         The return value of all registered callbacks is entirely ignored.
 
@@ -294,27 +311,30 @@ class MultiStageConfigurableApp(BaseApplication):
             configuration from the call to :meth:`configure`. What this means
             is you will get the Application's FROZEN configuration after the
             call to :meth:`configure` finished. Moreover, this resulting
-            configuration will be an :class:`ImmutableDict`.
+            configuration will be an
+            :class:`~werkzeug.datastructures.ImmutableDict`.
 
             The purpose of a Post Configure callback is not to futher alter the
             configuration, but rather to do lazy initialization for anything
             that absolutely requires the configuration, so any attempt to alter
-            the configuration of the app has been made difficult intentionally!
+            the configuration of the app has been made intentionally difficult!
 
         Args:
-            callback (function): The function you wish to run after
-                :meth:`configure`. Will receive the application's current
-                configuration as the first arugment, and the same arguments
-                passed to :meth:`configure` as the second.
+            callback (function):
+                The function you wish to run after :meth:`configure`. Will
+                receive the application's current configuration as the first
+                arugment, and the same arguments passed to :meth:`configure` as
+                the second.
 
-        Kwargs:
-            run_once (bool): Should this callback run every time configure
-                is called? Or just once and be deregistered? Pass True to only
-                run it once.
+        Keyword Args:
+            run_once (bool):
+                Should this callback run every time configure is called? Or
+                just once and be deregistered? Pass ``True`` to only run it
+                once.
 
         Returns:
-            fleaker.base.BaseApplication: Returns itself for a fluent
-                interface.
+            fleaker.base.BaseApplication:
+                Returns itself for a fluent interface.
         """
         if run_once:
             self._post_configure_callbacks['single'].append(callback)
@@ -334,11 +354,12 @@ class MultiStageConfigurableApp(BaseApplication):
         Returns from callbacks are ignored in all fashion.
 
         Args:
-            configure_args (list[object]): The full list of arguments passed to
-                :meth:`configure`.
+            configure_args (list[object]):
+                The full list of arguments passed to :meth:`configure`.
 
         Returns:
-            None: Does not return anything.
+            None:
+                Does not return anything.
         """
         resulting_configuration = ImmutableDict(self.config)
 
