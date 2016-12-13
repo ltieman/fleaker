@@ -6,6 +6,9 @@ fleaker.utils
 The Fleaker utils module provides a number of small helper functions to make
 working with Flask and Fleaker easier. It is mostly intended for internal use,
 but it is technically a public API, so treat it as such!
+
+:copyright: (c) 2016 by Croscon Consulting, see AUTHORS for more details.
+:license: BSD, see LICENSE for more details.
 """
 
 from flask import current_app

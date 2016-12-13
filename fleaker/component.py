@@ -56,10 +56,11 @@ class Component(object):
     current request or action, such as pagination data or the current User. The
     general goal of the context is to promote Dependency Injection and
     Separation of Concerns. Instead of having your Component interact with the
-    :class:`werkzeug.wrappers.Request` directly, you can extract information
+    :class:`~werkzeug.wrappers.Request` directly, you can extract information
     from it in the View method and pass it down. This prevents your Component
-    from referencing the ``Request`` *at all*, removing the need for
-    troublesome mocks or context managers when trying to do simple tasks.
+    from referencing the :class:`~werkzeug.wrappers.Request` *at all*, removing
+    the need for troublesome mocks or context managers when trying to do simple
+    tasks.
 
     Conceptually, Fleaker Components work like Flask extensions. They are setup
     with the ``init_app`` pattern, allowing one constructed component to work
@@ -68,13 +69,13 @@ class Component(object):
     of the magic is up to you to implement!
 
     Attributes:
-        context (werkzeug.datastructures.ImmutableDict): Contextual information
-            that is supplied to this component. The attribute is guaranteed to
-            always be a ``dict`` like object, but the values within should
-            **never** be relied upon, as all values contained therein are
-            optional. Also, this attribute is immutable because the component
-            should **never** be able to modify the values within the
-            ``context``.
+        context (werkzeug.datastructures.ImmutableDict):
+            Contextual information that is supplied to this component. The
+            attribute is guaranteed to always be a ``dict`` like object, but
+            the values within should **never** be relied upon, as all values
+            contained therein are optional. Also, this attribute is immutable
+            because the component should **never** be able to modify the values
+            within the ``context``.
     """
     _context = _CONTEXT_MISSING
 

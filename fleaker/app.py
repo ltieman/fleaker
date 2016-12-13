@@ -19,19 +19,18 @@ from .orm import ORMAwareApp
 
 class App(MultiStageConfigurableApp, MarshmallowAwareApp, FleakerJSONApp,
           ORMAwareApp, BaseApplication):
-    """The ``App`` class is the primary entrypoint for using Fleaker and is
-    a simple WSGI Application. In it's simplest form, you can think of
-    ``fleaker.App`` as roughly equivalent to ``flask.Flask``. On top of
-    everything that the standard ``flask.Flask`` provides, the Fleaker ``App``
-    also provides convenience functions for setting up common patterns, such as
-    setting configuration, automatic blueprint discovery, registering the login
-    manager, and many other tasks.
+    """The :class:`App` class is the primary entrypoint for using Fleaker and
+    is a simple WSGI Application. In it's simplest form, you can think of
+    :class:`App` as roughly equivalent to :class:`flask.Flask`. On top of
+    everything that the standard :class:`~flask.Flask` provides, the Fleaker
+    :class:`App` also provides convenience functions for setting up common
+    patterns, such as settings configuration, automatic blueprint discovery,
+    registering the login manager, and many other tasks.
 
-    Like ``flask.Flask``, it is passed the name of the module or package of the
-    application. Also like ``flask.Flask``, this name is reused frequently in
-    order to resolve relative imports in helper methods and to locate generic
-    resources. It accepts all of the same args and kwargs as
-    :class:`flask.Flask`.
+    Like :class:`~flask.Flask`, it is passed the name of the module or package
+    of the application. This name is reused frequently in order to resolve
+    relative imports in helper methods and to locate generic resources. It
+    accepts all of the same args and kwargs as :class:`~flask.Flask`.
 
     You can easily create an instance of :class:`App`, wherever you choose,
     like so::
@@ -39,9 +38,14 @@ class App(MultiStageConfigurableApp, MarshmallowAwareApp, FleakerJSONApp,
         from fleaker import App
         app = App(__name__)
 
-    :class:`fleaker.App` is really just an extended and supercharged version of
-    :class:`flask.Flask`, so anything available to your standard Flask app is
-    available in :class:`fleaker.App`.
+    :class:`App` is really just an extended and supercharged version of
+    :class:`~flask.Flask`, so anything available to your standard Flask app is
+    available in :class:`App`.
+
+    :class:`App` is largely made of individual mixins so see
+    :ref:`default-mixins` for more information. Additionally, :class:`App`
+    extends the basic :class:`~flask.Flask`, so see it's documentation for more
+    information on members and methods.
 
     .. versionadded:: 0.1.0
        The :class:`App` class has existed since Fleaker was conceived.

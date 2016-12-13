@@ -17,6 +17,14 @@ matter what, and you can safely extend off of that.
 From there, the differences between the PeeWee and the SQLAlchemy ORM backends
 are described in the relevant ``PeeWee`` (insert link here) and
 ```SQLAlchemy``` (insert link here) sections.
+
+Attributes:
+    db (werkzeug.local.LocalProxy): A proxy that will always point to the right
+        database. This is what you should import and interact with and allow
+        Fleaker to update it to the right value.
+
+:copyright: (c) 2016 by Croscon Consulting, see AUTHORS for more details.
+:license: BSD, see LICENSE for more details.
 """
 
 from functools import partial
@@ -111,8 +119,8 @@ class ORMAwareApp(BaseApplication):
     of a database, this just kicks and finishes the rest!
 
     For the top level DB proxy you should use for things like model classes,
-    please use :obj:`fleaker.db` which will automatically return the proper ORM
-    Extension.
+    please use :attr:`fleaker.orm.db` which will automatically return the proper
+    ORM Extension.
 
     Here's a quick sample:
 
@@ -163,20 +171,19 @@ class ORMAwareApp(BaseApplication):
         * ``DATABASE`` - this is a string that should contain the Database
           Connection URI we should use to connect to the proper database. It
           will be passed to PeeWee's created extension.
-
-    @TODO (orm): Clean this module up and try to get rid of globals/ugly names/
-                 hacks. Make it clean, make it pop.
-    @TODO (orm): Finish SQLA implementation.
-    @TODO (orm): Fix how `post_create_app` works. Right now it tries to
-                 INSTANTLY determine the ORM backend upon creation. This is
-                 fine... unless you don't want an ORM and have both SQLA and
-                 PeeWee installed >.< Besides, we shouldn't do this on creation,
-                 but rather when we init the extension. Moving all of the meat
-                 in post_create_app to an post_configure hook should solve most
-                 of this problem and SIGNIFICANTLY clean up the implementation.
-    @TODO (orm): More docs about configuration and differences between SQLA and
-                 PeeWee setup; refer users to the actual docs at the end.
     """
+    # @TODO (orm): Clean this module up and try to get rid of globals/ugly names/
+    #              hacks. Make it clean, make it pop.
+    # @TODO (orm): Finish SQLA implementation.
+    # @TODO (orm): Fix how `post_create_app` works. Right now it tries to
+    #              INSTANTLY determine the ORM backend upon creation. This is
+    #              fine... unless you don't want an ORM and have both SQLA and
+    #              PeeWee installed >.< Besides, we shouldn't do this on creation,
+    #              but rather when we init the extension. Moving all of the meat
+    #              in post_create_app to an post_configure hook should solve most
+    #              of this problem and SIGNIFICANTLY clean up the implementation.
+    # @TODO (orm): More docs about configuration and differences between SQLA and
+    #              PeeWee setup; refer users to the actual docs at the end.
 
     @classmethod
     def post_create_app(cls, app, **settings):
