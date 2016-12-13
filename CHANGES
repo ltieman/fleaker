@@ -3,6 +3,14 @@ Fleaker Changelog
 
 Here you can see all changes between each release of Fleaker.
 
+Unreleased Version
+------------------
+
+The rise of the documentation...
+
+- Added Sphinx integration for generating the documentation. Right now, it's
+  mostly focued around generating the API Documentation.
+
 Version 0.1.4
 -------------
 
