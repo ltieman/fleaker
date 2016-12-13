@@ -47,7 +47,7 @@ class PhoneNumberField(fields.String, FleakerFieldMixin):
             'type': 'string',
         }
 
-    def _serialize(self, value, attr, obj):
+    def _deserialize(self, value, attr, data):
         """Format and validate the phone number using libphonenumber."""
         strict_validation = self.get_field_value(
             'strict_phone_validation',
@@ -86,8 +86,13 @@ class PhoneNumberField(fields.String, FleakerFieldMixin):
             if strict_validation or strict_region:
                 raise ValidationError(exc)
 
-        return value
+        return super(PhoneNumberField, self)._serialize(value, attr, data)
 
-    def _deserialize(self, *args):
-        """Deserializiation is the same as serialization."""
-        return self._serialize(*args)
+    def _serialize(self, value, attr, obj):
+        """Serialization follows the same strategy as deserialization."""
+        value = super(PhoneNumberField, self)._serialize(value, attr, obj)
+
+        if value:
+            value = self._deserialize(value, attr, obj)
+
+        return value
