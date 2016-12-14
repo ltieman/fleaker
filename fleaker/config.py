@@ -377,3 +377,7 @@ class MultiStageConfigurableApp(BaseApplication):
         # now do the single run callbacks
         for callback in single_callbacks:
             callback(resulting_configuration, configure_args)
+
+
+class ConfigOption(object):
+    pass

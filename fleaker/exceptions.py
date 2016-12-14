@@ -260,6 +260,10 @@ class FleakerException(FleakerBaseException):
     """
 
 
+class ConfigurationError(object):
+    pass
+
+
 class AppException(FleakerBaseException):
     """The base class for all specific exceptions for an end User implemented
     application.
