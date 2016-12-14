@@ -17,11 +17,31 @@ from werkzeug.datastructures import ImmutableDict
 
 import fleaker
 
-from fleaker.config import MultiStageConfigurableApp
+from fleaker.config import ConfigOption, MultiStageConfigurableApp
+from fleaker.exceptions import ConfigurationError, FleakerException
 
 import tests.configs.settings as settings
 
 from tests._compat import mock
+
+
+# a list of non-existent configuration files of all configuration file types,
+# useful for tests that test behavior for missing files
+MISSING_CONFIGS = [
+    '.configs.dne',
+    './configs/dne.json',
+    './configs/dne.py',
+    './configs/dne.cfg',
+    '/terrible/path/in/general.json',
+]
+
+# configuration files with bad permissions (000)
+BAD_PERMISSION_CONFIGS = [
+    '.configs.locked',
+    './configs/locked.json',
+    './configs/locked.py',
+    './configs/locked.cfg',
+]
 
 
 def _create_app():
@@ -314,20 +334,81 @@ def test_config_post_configure_run_multiple():
     assert runs_every_time.call_count == 2
 
 
-@pytest.mark.skip(reason="There has not been enough time to implement this "
-                         "just yet. It should be an attempted ``configure`` "
-                         "that cannot find an Import Path.")
-def test_config_import_missing():
+@pytest.mark.parametrize("config_file", MISSING_CONFIGS)
+def test_config_configure_ignore_missing(config_file):
+    """Ensure that ignore_missing doesn't fail for missing files/modules."""
+    app = _create_app()
+
+    # ensure that a missing module doesn't break anything
+    app.configure(config_file, '.configs.config', ignore_missing=True)
+
+    assert app.config['FLEAKER_CONFIG_PY_LOADED']
+    assert app.config['THIRD_OPTION'] == 'from config.py'
+
+
+@pytest.mark.parametrize("config_file", MISSING_CONFIGS)
+def test_config_config_option_ignore_missing(config_file):
+    """Ensure ConfigOption works with ignore_missing."""
+    app = _create_app()
+
+    opt = ConfigOption(config_file, ignore_missing=True)
+
+    app.configure(opt, '.configs.config')
+
+    assert app.config['FLEAKER_CONFIG_PY_LOADED']
+    assert app.config['THIRD_OPTION'] == 'from config.py'
+
+
+@pytest.mark.parametrize("config_file", MISSING_CONFIGS)
+def test_config_config_option_does_not_override(config_file):
+    """Ensure a ConfigOption with ignore_missing does not imply ignore_missing
+    over the entire call.
+    """
+    app = _create_app()
+
+    opt = ConfigOption(config_file, ignore_missing=True)
+
+    with pytest.raises(ConfigurationError):
+        app.configure(opt, '.configs.config', '.configs.really_dne')
+
+
+@pytest.mark.parametrize("config_file", MISSING_CONFIGS)
+def test_config_import_missing(config_file):
     """Ensure that a proper error message is thrown if we can't find a config.
     """
+    app = _create_app()
+
+    # @TODO: This needs a better error message.
+    err_msg = "We could not find the requested configuration file!"
+    with pytest.raises(ConfigurationError, msg=err_msg) as exc:
+        app.configure(config_file)
+
+    # now ensure exception inheritance is fine
+    assert isinstance(exc.value, FleakerException)
+    # @TODO: Or should this be an IOError? Either way, pick only one base
+    # exception inheritance, and document that. I think IOError makes more
+    # sense... It CAN be both... but that seems aggressive
+    assert isinstance(exc.value, ImportError)
 
 
-@pytest.mark.skip(reason="There has not been enough time to implement this "
-                         "just yet. It should be an attempted ``configure`` "
-                         "that cannot 'find' an Import Path or file, but upon "
-                         "closer inspection, the file perms are wrong. Should "
-                         "throw a descriptive error.")
-def test_config_import_no_owner():
+@pytest.mark.parametrize("config_file", BAD_PERMISSION_CONFIGS)
+def test_config_import_no_owner(config_file):
     """Ensure that a helpful error message is thrown if we can't read a config
     file.
     """
+    app = _create_app()
+
+    # @TODO: Better error message, rip from Weber
+    err_msg = "We can't import that, but it exists, are perms right?"
+    with pytest.raises(ConfigurationError, msg=err_msg) as exc:
+        app.configure(config_file)
+    # @TODO: Does this work on Windows?
+
+    # now ensure exception inheritance is fine
+    assert isinstance(exc.value, FleakerException)
+    # @TODO: Or should this be an IOError? Either way, pick only one base
+    # exception inheritance, and document that. I think IOError makes more
+    # sense... It CAN be both... but that seems aggressive
+    assert isinstance(exc.value, ImportError)
+
+    # @TODO: Do we need a config option to ignore this? Possibly
