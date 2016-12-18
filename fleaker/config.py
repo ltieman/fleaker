@@ -116,13 +116,28 @@ class MultiStageConfigurableApp(BaseApplication):
                 An explicit list of keys that should be allowed. If provided
                 and ``whitelist_keys`` is ``True``, we will use that as our
                 whitelist instead of pre-existing app config keys.
+            ignore_missing (bool):
+                Whether or not we should raise an error if a configuration file
+                is missing when we go to search for it. If strings are provided
+                as your configurable, they are assumed to be file paths. If
+                this is ``False`` (the default) and there is no file at that
+                path, a :class:`~fleaker.exceptions.ConfigurationError` will be
+                raised. If this is ``True``, then no error will be raised and
+                we will silently skip that configurable.
         """
-        whitelist_keys_from_mappings = kwargs.get(
-            'whitelist_keys_from_mappings', False
-        )
-        whitelist = kwargs.get('whitelist')
+        original_opts = {
+            'whitelist_keys_from_mappings': kwargs.get(
+                'whitelist_keys_from_mappings', False),
+            'whitelist': kwargs.get('whitelist'),
+            'ignore_missing': kwargs.get('ignore_missing', False),
+        }
 
         for item in args:
+            try:
+                opts = item.update_options(original_opts, copy=True)
+            except AttributeError:
+                opts = original_opts.copy()
+
             if isinstance(item, string_types):
                 _, ext = splitext(item)
 
@@ -380,4 +395,69 @@ class MultiStageConfigurableApp(BaseApplication):
 
 
 class ConfigOption(object):
-    pass
+    # @TODO: Finish the doc
+    """:class:`ConfigOption` """
+
+    def __init__(self, configurable, whitelist_keys_from_mappings=False,
+                 whitelist=None, ignore_missing=False):
+        # @TODO: Finish the doc
+        """
+        Args:
+            configurable (object):
+                An item we should attempt to configure from. Item refers to
+                a string, object, dictionary, etc.
+
+        Keyword Args:
+            whitelist_keys_from_mappings (bool):
+                Should we whitelist the keys we pull from mappings? Very useful
+                if you're passing in an entire OS ``environ`` and you want to
+                omit things like ``LESSPIPE``. If no whitelist is provided, we
+                use the pre-existing config keys as a whitelist.
+            whitelist (list[str]):
+                An explicit list of keys that should be allowed. If provided
+                and ``whitelist_keys`` is ``True``, we will use that as our
+                whitelist instead of pre-existing app config keys.
+            ignore_missing (bool):
+                Whether or not we should raise an error if a configuration file
+                is missing when we go to search for it. If strings are provided
+                as your configurable, they are assumed to be file paths. If
+                this is ``False`` (the default) and there is no file at that
+                path, a :class:`~fleaker.exceptions.ConfigurationError` will be
+                raised. If this is ``True``, then no error will be raised and
+                we will silently skip that configurable.
+        """
+        self.whitelist_keys_from_mappings = whitelist_keys_from_mappings
+        self.whitelist = whitelist
+        self.ignore_missing = ignore_missing
+
+        self.configurable = configurable
+
+    def update_options(self, options, copy=False):
+        """Update a set of configuration options based on current state.
+
+        If you wish to implement your own :class:`ConfigOption`, or override
+        the existing configuratiobn parsing, this is the method you should
+        reimplement.
+
+        Sample usage:
+
+        >>> opts = {}
+        >>> config_option = ConfigOption(ignore_missing=True)
+        >>> config_option.update_options(opts)
+        {'ignore_missing': True, 'whitelist_keys_from_mappings': False, 'whitelist': None}
+
+        Args:
+            options (dict);
+                The original set of configuration options that we should
+                update. Basically, a set of defaults.
+
+        Kwargs:
+            copy (bool):
+                Should we copy the original options before we update? If
+                ``True`` is passed, we will, leaving the originals untouched.
+                If ``False`` is passed (the default), we will update in place.
+
+        Returns:
+            dict:
+                Returns the newly updated dictionary of options.
+        """

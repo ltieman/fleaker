@@ -372,6 +372,22 @@ def test_config_config_option_does_not_override(config_file):
         app.configure(opt, '.configs.config', '.configs.really_dne')
 
 
+def test_config_config_option_whitelist():
+    # @TODO: Test where we use whitlist and whitelist_keys_from_mappings via
+    # ConfigOption and not configure
+    pytest.fail()
+
+
+def test_enable_doctest():
+    pytest.fail("Please enable doctests for ConfigOptions' update_options")
+
+
+def test_config_option_update_options():
+    # @TODO: Test this method; one test that tests both copy as True and False
+    # and provides all args to ConfigOption in their non-default value
+    pytest.fail()
+
+
 @pytest.mark.parametrize("config_file", MISSING_CONFIGS)
 def test_config_import_missing(config_file):
     """Ensure that a proper error message is thrown if we can't find a config.
@@ -392,14 +408,18 @@ def test_config_import_missing(config_file):
 
 
 @pytest.mark.parametrize("config_file", BAD_PERMISSION_CONFIGS)
-def test_config_import_no_owner(config_file):
+def test_config_import_no_owner(config_file, mocker):
     """Ensure that a helpful error message is thrown if we can't read a config
     file.
     """
     app = _create_app()
 
-    # @TODO: Better error message, rip from Weber
-    err_msg = "We can't import that, but it exists, are perms right?"
+    io_err_msg = ("[Errno 13] Permission denied: "
+                  "'tests/configs/{}'".format(config_file))
+    mocker.patch('flask.config.open'.format(__name__), side_effect=IOError(io_err_msg))
+
+    err_msg = ("Found configuration item '{}' but could not load it! Are the "
+               "permissions properly configured?".format(config_file))
     with pytest.raises(ConfigurationError, msg=err_msg) as exc:
         app.configure(config_file)
     # @TODO: Does this work on Windows?
@@ -411,4 +431,4 @@ def test_config_import_no_owner(config_file):
     # sense... It CAN be both... but that seems aggressive
     assert isinstance(exc.value, ImportError)
 
-    # @TODO: Do we need a config option to ignore this? Possibly
+    # @TODO: Do we need a ConfigOption to ignore this? Possibly
