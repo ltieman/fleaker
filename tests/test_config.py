@@ -396,7 +396,7 @@ def test_config_import_missing(config_file):
 
     # @TODO: This needs a better error message.
     err_msg = "We could not find the requested configuration file!"
-    with pytest.raises(ConfigurationError, msg=err_msg) as exc:
+    with pytest.raises(ConfigurationError) as exc:
         app.configure(config_file)
 
     # now ensure exception inheritance is fine
@@ -405,6 +405,7 @@ def test_config_import_missing(config_file):
     # exception inheritance, and document that. I think IOError makes more
     # sense... It CAN be both... but that seems aggressive
     assert isinstance(exc.value, ImportError)
+    assert exc.value.message == err_msg
 
 
 @pytest.mark.parametrize("config_file", BAD_PERMISSION_CONFIGS)
@@ -420,7 +421,7 @@ def test_config_import_no_owner(config_file, mocker):
 
     err_msg = ("Found configuration item '{}' but could not load it! Are the "
                "permissions properly configured?".format(config_file))
-    with pytest.raises(ConfigurationError, msg=err_msg) as exc:
+    with pytest.raises(ConfigurationError) as exc:
         app.configure(config_file)
     # @TODO: Does this work on Windows?
 
@@ -430,5 +431,6 @@ def test_config_import_no_owner(config_file, mocker):
     # exception inheritance, and document that. I think IOError makes more
     # sense... It CAN be both... but that seems aggressive
     assert isinstance(exc.value, ImportError)
+    assert exc.value.message == err_msg
 
     # @TODO: Do we need a ConfigOption to ignore this? Possibly
