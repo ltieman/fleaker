@@ -13,8 +13,8 @@ automatic error handling.
 
 from flask import flash, url_for, redirect
 
-from fleaker import DEFAULT_DICT, MISSING
-from fleaker.base import BaseApplication
+from .base import BaseApplication
+from .constants import DEFAULT_DICT, MISSING
 
 
 class FleakerBaseException(Exception):
@@ -260,8 +260,13 @@ class FleakerException(FleakerBaseException):
     """
 
 
-class ConfigurationError(object):
-    pass
+class ConfigurationError(FleakerException):
+    """An error occurred while attempting to configure the application.
+
+    Only thrown via
+    :meth:`~fleaker.config.MultiStageConfigurableApp.configure`.
+    """
+    # @TODO: Better docs? What exc hierarchy do we want here?
 
 
 class AppException(FleakerBaseException):

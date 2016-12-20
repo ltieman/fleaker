@@ -359,6 +359,39 @@ def test_config_config_option_ignore_missing(config_file):
     assert app.config['THIRD_OPTION'] == 'from config.py'
 
 
+def test_config_config_option_does_not_override_configure():
+    """Ensure that if a ConfigOption has no value, it won't override configure
+    args.
+    """
+    app = _create_app()
+
+    opt = ConfigOption('.configs.config')
+
+    app.configure(opt, whitelist=['THIRD_OPTION'],
+                  whitelist_keys_from_mappings=True)
+
+    # since a `whitelist` is passed in the call to configure, it should still
+    # be used even though `ConfigOption` doesn't have one
+    assert 'FLEAKER_CONFIG_PY_LOADED' not in app.config
+    assert app.config['THIRD_OPTION'] == 'from config.py'
+
+
+def test_config_config_option_share_settings():
+    """Ensure that arguments from `configure` work with ConfigOption."""
+    app = _create_app()
+
+    opt = ConfigOption('.configs.config', whitelist_keys_from_mappings=True)
+    opt2 = ConfigOption('./configs/config.cfg')
+
+    app.configure(opt, opt2, whitelist=['THIRD_OPTION'])
+
+    # ensure that the whitelist is applied to the first ConfigOption, but not
+    # the second, since it didn't have the whitelist_keys call
+    assert app.config['FLEAKER_CONFIG_CFG_LOADED']
+    assert app.config['THIRD_OPTION'] == 'loaded from config.cfg'
+    assert 'FLEAKER_CONFIG_PY_LOADED' not in app.config
+
+
 @pytest.mark.parametrize("config_file", MISSING_CONFIGS)
 def test_config_config_option_does_not_override(config_file):
     """Ensure a ConfigOption with ignore_missing does not imply ignore_missing

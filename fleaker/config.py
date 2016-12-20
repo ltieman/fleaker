@@ -21,6 +21,7 @@ from werkzeug.datastructures import ImmutableDict
 
 from ._compat import string_types
 from .base import BaseApplication
+from .exceptions import ConfigurationError
 
 
 class MultiStageConfigurableApp(BaseApplication):
@@ -135,6 +136,7 @@ class MultiStageConfigurableApp(BaseApplication):
         for item in args:
             try:
                 opts = item.update_options(original_opts, copy=True)
+                item = item.get_configurable()
             except AttributeError:
                 opts = original_opts.copy()
 
@@ -159,8 +161,8 @@ class MultiStageConfigurableApp(BaseApplication):
                 # you do that, you're a monster.
                 self._configure_from_mapping(
                     item,
-                    whitelist_keys=whitelist_keys_from_mappings,
-                    whitelist=whitelist
+                    whitelist_keys=opts['whitelist_keys_from_mappings'],
+                    whitelist=opts['whitelist']
                 )
 
             else:
@@ -184,7 +186,12 @@ class MultiStageConfigurableApp(BaseApplication):
             fleaker.App:
                 Returns itself.
         """
-        self.config.from_json(item)
+        # we always pass in `silent=True`, because we have our own exceptions
+        # for this
+        result = self.config.from_json(item, silent=True)
+
+        if not result:
+            raise ConfigurationError("BOO!")
 
         return self
 
@@ -203,7 +210,12 @@ class MultiStageConfigurableApp(BaseApplication):
             fleaker.App:
                 Returns itself.
         """
-        self.config.from_pyfile(item)
+        # we always pass in `silent=True`, because we have our own exceptions
+        # for this
+        result = self.config.from_pyfile(item, silent=True)
+
+        if not result:
+            raise ConfigurationError("BOO!")
 
         return self
 
@@ -226,7 +238,10 @@ class MultiStageConfigurableApp(BaseApplication):
         if item[0] == '.':
             package = self.import_name
 
-        obj = importlib.import_module(item, package=package)
+        try:
+            obj = importlib.import_module(item, package=package)
+        except ImportError:
+            raise ConfigurationError("BOO!")
 
         self.config.from_object(obj)
 
@@ -436,8 +451,10 @@ class ConfigOption(object):
         """Update a set of configuration options based on current state.
 
         If you wish to implement your own :class:`ConfigOption`, or override
-        the existing configuratiobn parsing, this is the method you should
-        reimplement.
+        the existing configuratiobn parsing, this is one of the methods you
+        should reimplement, alongside :meth:`get_configurable`. This is the
+        method that you should then use to hook into any sort of custom option
+        parsing you may have.
 
         Sample usage:
 
@@ -461,3 +478,28 @@ class ConfigOption(object):
             dict:
                 Returns the newly updated dictionary of options.
         """
+        return options
+        if copy:
+            options = options.copy()
+
+        options['whitelist_keys_from_mappings'] = self.whitelist_keys_from_mappings
+        options['whitelist'] = self.whitelist
+        options['ignore_missing'] = self.ignore_missing
+
+        return options
+
+    def get_configurable(self):
+        """Return the actual configuration item that this class has wrapped.
+
+        If you wish to implement your own :class:`ConfigOption`, or override
+        the existing configuratiobn parsing, this is one of the methods you
+        should reimplement, alongside :meth:`update_options`. This is the
+        method you should use to alter or change a configurable at runtime, if
+        desired.
+
+        Returns:
+            object:
+                The item we should attempt to configure from. Item refers to
+                a string, object, dictionary, etc.
+        """
+        return self.configurable
