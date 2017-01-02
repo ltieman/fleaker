@@ -260,7 +260,7 @@ class FleakerException(FleakerBaseException):
     """
 
 
-class ConfigurationError(FleakerException):
+class ConfigurationError(FleakerException, IOError):
     """An error occurred while attempting to configure the application.
 
     Only thrown via

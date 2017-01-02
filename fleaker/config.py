@@ -21,6 +21,7 @@ from werkzeug.datastructures import ImmutableDict
 
 from ._compat import string_types
 from .base import BaseApplication
+from .constants import MISSING
 from .exceptions import ConfigurationError
 
 
@@ -33,6 +34,11 @@ class MultiStageConfigurableApp(BaseApplication):
        The :class:`MultiStageConfigurableApp` class has existed since Fleaker
        was conceived.
     """
+    # used whenever we find a config file with a bad permission
+    permissions_error = ("Found configuration item '{}' at {} but could not "
+                         "load it! Are the permissions properly configured?")
+    missing_error = ("Could not find configuration item '{}'! Searched path: "
+                     "{}.")
 
     def __init__(self, import_name, **settings):
         """Construct the app.
@@ -186,14 +192,7 @@ class MultiStageConfigurableApp(BaseApplication):
             fleaker.App:
                 Returns itself.
         """
-        # we always pass in `silent=True`, because we have our own exceptions
-        # for this
-        result = self.config.from_json(item, silent=True)
-
-        if not result:
-            raise ConfigurationError("BOO!")
-
-        return self
+        return self._configure_from_file('from_json', item)
 
     def _configure_from_pyfile(self, item):
         """Load configuration from a Python file. Python files include Python
@@ -210,12 +209,60 @@ class MultiStageConfigurableApp(BaseApplication):
             fleaker.App:
                 Returns itself.
         """
+        return self._configure_from_file('from_pyfile', item)
+
+    def _configure_from_file(self, method, item):
+        """Wrapper method to call one of Flask's file ``config_from`` methods.
+
+        This is a small wrapper that encapsulates the common error handling we
+        do for Flask's file based ``config_from`` methods (currently
+        :meth:`~flask.Config.from_pyfile` and :meth:`~flask.Config.from_json`).
+        Since the only difference our own :meth:`_configure_from_pyfile` and
+        :meth:`_configure_from_json` methods have is which Flask method they
+        call, we can encapsulate the rest easily.
+
+        Args:
+            method (str):
+                The method on :class:`flask.Config` that should be called to
+                complete this configuration.
+            item (str):
+                The sole argument that should be passed to the method
+                associated with ``method``. Nominally, this is the path to
+                a file.
+
+        Raises:
+            fleaker.exceptions.ConfigurationError:
+                Raised if we cannot find or open the file we need to configure
+                from.
+
+        Returns:
+            fleaker.App:
+                Returns itself.
+        """
+        config_from = getattr(self.config, method)
+
         # we always pass in `silent=True`, because we have our own exceptions
         # for this
-        result = self.config.from_pyfile(item, silent=True)
+        try:
+            result = config_from(item, silent=True)
+        except IOError:
+            # file exists, but permissions are wrong
+            full_path = os.path.join(self.root_path, item)
+            if os.path.exists(full_path):
+                raise ConfigurationError(
+                    self.permissions_error.format(item, full_path)
+                )
 
+            # reraise in this case; if the file is missing we shouldn't hit
+            # this branch, so the OS is being whacky
+            raise
+
+        # since ``silent=True`` is passed to the underlying Flask method,
+        # a False return means we couldn't find what we needed
         if not result:
-            raise ConfigurationError("BOO!")
+            full_path = os.path.join(self.root_path, item)
+            raise ConfigurationError(self.missing_error.format(item,
+                                                               full_path))
 
         return self
 
@@ -240,8 +287,28 @@ class MultiStageConfigurableApp(BaseApplication):
 
         try:
             obj = importlib.import_module(item, package=package)
-        except ImportError:
-            raise ConfigurationError("BOO!")
+        except ImportError as exc:
+            # let's see if this was a permissions error, or a missing module;
+            # either way, we need the full path to the python file
+            pkg = ''
+            if package:
+                pkg = importlib.import_module(package)
+                pkg = os.path.dirname(pkg.__file__)
+
+            path = item[1:] if item.startswith('.') else item
+            path = path.replace('.', os.path.sep) + '.py'
+            full_path = os.path.join(pkg, path)
+
+            if os.path.exists(full_path):
+                # was a permissions error, give a helpful message
+                raise ConfigurationError(
+                    self.permissions_error.format(item, full_path)
+                )
+            else:
+                # resource doesn't exist, raise a different error
+                raise ConfigurationError(
+                    self.missing_error.format(item, full_path)
+                )
 
         self.config.from_object(obj)
 
@@ -413,8 +480,8 @@ class ConfigOption(object):
     # @TODO: Finish the doc
     """:class:`ConfigOption` """
 
-    def __init__(self, configurable, whitelist_keys_from_mappings=False,
-                 whitelist=None, ignore_missing=False):
+    def __init__(self, configurable, whitelist_keys_from_mappings=MISSING,
+                 whitelist=MISSING, ignore_missing=MISSING):
         # @TODO: Finish the doc
         """
         Args:
@@ -478,13 +545,17 @@ class ConfigOption(object):
             dict:
                 Returns the newly updated dictionary of options.
         """
-        return options
         if copy:
             options = options.copy()
 
-        options['whitelist_keys_from_mappings'] = self.whitelist_keys_from_mappings
-        options['whitelist'] = self.whitelist
-        options['ignore_missing'] = self.ignore_missing
+        if self.whitelist_keys_from_mappings is not MISSING:
+            options['whitelist_keys_from_mappings'] = self.whitelist_keys_from_mappings
+
+        if self.whitelist is not MISSING:
+            options['whitelist'] = self.whitelist
+
+        if self.ignore_missing is not MISSING:
+            options['ignore_missing'] = self.ignore_missing
 
         return options
 

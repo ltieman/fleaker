@@ -28,20 +28,28 @@ from tests._compat import mock
 # a list of non-existent configuration files of all configuration file types,
 # useful for tests that test behavior for missing files
 MISSING_CONFIGS = [
-    '.configs.dne',
     './configs/dne.json',
     './configs/dne.py',
     './configs/dne.cfg',
     '/terrible/path/in/general.json',
 ]
 
+MISSING_MODULES = [
+    '.configs.dne',
+]
+
 # configuration files with bad permissions (000)
 BAD_PERMISSION_CONFIGS = [
-    '.configs.locked',
     './configs/locked.json',
     './configs/locked.py',
     './configs/locked.cfg',
 ]
+
+# modules with bad permissions (000), needs a different mocking structure
+BAD_PERMISSION_MODULES = [
+    '.configs.locked',
+]
+
 
 
 def _create_app():
@@ -389,7 +397,7 @@ def test_config_config_option_share_settings():
     # the second, since it didn't have the whitelist_keys call
     assert app.config['FLEAKER_CONFIG_CFG_LOADED']
     assert app.config['THIRD_OPTION'] == 'loaded from config.cfg'
-    assert 'FLEAKER_CONFIG_PY_LOADED' not in app.config
+    assert 'FLEAKER_CONFIG_PY_LOADED' not in app.config, 'This option doesnt work on files...'
 
 
 @pytest.mark.parametrize("config_file", MISSING_CONFIGS)
@@ -428,7 +436,9 @@ def test_config_import_missing(config_file):
     app = _create_app()
 
     # @TODO: This needs a better error message.
-    err_msg = "We could not find the requested configuration file!"
+    full_path = os.path.join(os.path.dirname(__file__), config_file)
+    err_msg = ("Could not find configuration item '{}'! Searched path: "
+               "{}.".format(config_file, full_path))
     with pytest.raises(ConfigurationError) as exc:
         app.configure(config_file)
 
@@ -437,8 +447,32 @@ def test_config_import_missing(config_file):
     # @TODO: Or should this be an IOError? Either way, pick only one base
     # exception inheritance, and document that. I think IOError makes more
     # sense... It CAN be both... but that seems aggressive
-    assert isinstance(exc.value, ImportError)
-    assert exc.value.message == err_msg
+    assert isinstance(exc.value, IOError)
+    assert str(exc.value) == err_msg
+
+
+@pytest.mark.parametrize("config_file", MISSING_MODULES)
+def test_config_import_missing(config_file):
+    """Ensure that a proper error message is thrown if we can't find a config.
+    """
+    app = _create_app()
+
+    # @TODO: This needs a better error message.
+    path = config_file[1:] if config_file.startswith('.') else config_file
+    path = path.replace('.', os.path.sep) + '.py'
+    full_path = os.path.join(os.path.dirname(__file__), path)
+    err_msg = ("Could not find configuration item '{}'! Searched path: "
+               "{}.".format(config_file, full_path))
+    with pytest.raises(ConfigurationError) as exc:
+        app.configure(config_file)
+
+    # now ensure exception inheritance is fine
+    assert isinstance(exc.value, FleakerException)
+    # @TODO: Or should this be an IOError? Either way, pick only one base
+    # exception inheritance, and document that. I think IOError makes more
+    # sense... It CAN be both... but that seems aggressive
+    assert isinstance(exc.value, IOError)
+    assert str(exc.value) == err_msg
 
 
 @pytest.mark.parametrize("config_file", BAD_PERMISSION_CONFIGS)
@@ -452,18 +486,43 @@ def test_config_import_no_owner(config_file, mocker):
                   "'tests/configs/{}'".format(config_file))
     mocker.patch('flask.config.open'.format(__name__), side_effect=IOError(io_err_msg))
 
-    err_msg = ("Found configuration item '{}' but could not load it! Are the "
-               "permissions properly configured?".format(config_file))
+    full_path = os.path.join(os.path.dirname(__file__), config_file)
+    err_msg = ("Found configuration item '{}' at {} but could not load it! Are"
+               " the permissions properly configured?".format(config_file,
+                                                              full_path))
+
     with pytest.raises(ConfigurationError) as exc:
         app.configure(config_file)
     # @TODO: Does this work on Windows?
 
     # now ensure exception inheritance is fine
     assert isinstance(exc.value, FleakerException)
-    # @TODO: Or should this be an IOError? Either way, pick only one base
-    # exception inheritance, and document that. I think IOError makes more
-    # sense... It CAN be both... but that seems aggressive
-    assert isinstance(exc.value, ImportError)
-    assert exc.value.message == err_msg
+    assert isinstance(exc.value, IOError)
+    assert str(exc.value) == err_msg
 
     # @TODO: Do we need a ConfigOption to ignore this? Possibly
+
+
+@pytest.mark.parametrize('config_file', BAD_PERMISSION_MODULES)
+def test_config_import_module_no_owner(config_file, mocker):
+    """Ensure that a helpful error message is thrown if we can't import a config
+    file.
+    """
+    app = _create_app()
+
+    mocker.patch.dict('sys.modules', {config_file: None})
+
+    path = config_file[1:] if config_file.startswith('.') else config_file
+    path = path.replace('.', os.path.sep) + '.py'
+    full_path = os.path.join(os.path.dirname(__file__), path)
+    err_msg = ("Found configuration item '{}' at {} but could not load it! Are"
+               " the permissions properly configured?".format(config_file,
+                                                              full_path))
+
+    with pytest.raises(ConfigurationError) as exc:
+        app.configure(config_file)
+
+    # now ensure exception inheritance is fine
+    assert isinstance(exc.value, FleakerException)
+    assert isinstance(exc.value, IOError)
+    assert str(exc.value) == err_msg
