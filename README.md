@@ -68,7 +68,7 @@ See a smelly lil' issue you wanna tackle? Awesome, here's how you do it, using a
 + Use tox to run the tests and utilize the stack trace to locate the source
 + Once the source is located, go forth and fix it
 + Run tests to ensure all is well
-	+ Run tests with both the `-py27` and `-py33` flags to ensure success for both Python 2 and Python 3 
+	+ Make sure to run `tox` without flags to ensure all environments are tested and passing
 
 
 ## The Dream
