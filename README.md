@@ -58,7 +58,10 @@ And it will run both `flake8` and `pylint` for you.
 
 See a smelly lil' issue you wanna tackle? Awesome, here's how you do it, using a classic test-driven approach:
 
++ First you're going to want to clone the repository: `git clone git@github.com:croscon/fleaker.git` 
 + Write a test that produces the failure seen in the issue
+	+ Run all tests with this command (py27 denotes a python 2 run environment): `tox -e py27`
+	+ Run a specific test by passing in the location like so **(note the space)**: `tox -e py27 -- tests/path-to-test-file`
 + Write various similar tests to see how they respond
 	+ If they fail, you can try to address them in the fix for the original issue
 	+ If they pass, no problem.
