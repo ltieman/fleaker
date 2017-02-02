@@ -4,11 +4,13 @@
 import pytest
 
 from marshmallow import ValidationError
+from marshmallow.fields import String
 
 from fleaker.marshmallow import PhoneNumberField, Schema
 
 
 class PhoneNumberSchema(Schema):
+    text = String(allow_none=True)
     phone = PhoneNumberField(allow_none=True)
 
 
@@ -24,7 +26,10 @@ def test_phone_number_field_load(number, expected, strict, passes):
     payload = {'phone': number}
 
     if passes:
-        serialized = schema.load(payload).data
+        deserialized = schema.load(payload).data
+        assert deserialized['phone'] == expected
+
+        serialized = schema.dump(deserialized).data
         assert serialized['phone'] == expected
     else:
         error_msg = {
@@ -36,15 +41,19 @@ def test_phone_number_field_load(number, expected, strict, passes):
             schema.load(payload)
 
 
-def test_phone_number_early_exit():
+@pytest.mark.parametrize('payload', (
+    {'phone': None},
+    {'phone': ''},
+    {'text': ''},
+    {},
+))
+def test_phone_number_early_exit(payload):
     """Ensure that a null phone number isn't parsed."""
     schema = PhoneNumberSchema()
-    payload = [
-        {'phone': None},
-        {'phone': ''},
-        {}
-    ]
-    serialized = schema.load(payload, many=True).data
+    serialized = schema.load(payload).data
 
-    for item in serialized:
-        assert not item.get('phone')
+    assert not serialized.get('phone')
+
+    deserialized = schema.dump(serialized).data
+
+    assert not deserialized.get('phone')
