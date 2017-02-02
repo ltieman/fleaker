@@ -56,7 +56,9 @@ And it will run both `flake8` and `pylint` for you.
 
 ## Fixing an issue
 
-See a smelly lil' issue you wanna tackle? Awesome, here's how you do it, using a classic test-driven approach:
+See an issue or bug you wanna tackle?
+
+Awesome, here's how you do it, using a classic test-driven approach:
 
 + First you're going to want to clone the repository: `git clone git@github.com:croscon/fleaker.git` 
 + Write a test that produces the failure seen in the issue
