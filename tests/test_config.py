@@ -342,7 +342,7 @@ def test_config_post_configure_run_multiple():
     assert runs_every_time.call_count == 2
 
 
-@pytest.mark.parametrize("config_file", MISSING_CONFIGS)
+@pytest.mark.parametrize("config_file", MISSING_CONFIGS + MISSING_MODULES)
 def test_config_configure_ignore_missing(config_file):
     """Ensure that ignore_missing doesn't fail for missing files/modules."""
     app = _create_app()
@@ -354,7 +354,7 @@ def test_config_configure_ignore_missing(config_file):
     assert app.config['THIRD_OPTION'] == 'from config.py'
 
 
-@pytest.mark.parametrize("config_file", MISSING_CONFIGS)
+@pytest.mark.parametrize("config_file", MISSING_CONFIGS + MISSING_MODULES)
 def test_config_config_option_ignore_missing(config_file):
     """Ensure ConfigOption works with ignore_missing."""
     app = _create_app()
@@ -452,7 +452,7 @@ def test_config_import_missing(config_file):
 
 
 @pytest.mark.parametrize("config_file", MISSING_MODULES)
-def test_config_import_missing(config_file):
+def test_config_import_missing_module(config_file):
     """Ensure that a proper error message is thrown if we can't find a config.
     """
     app = _create_app()

@@ -150,14 +150,14 @@ class MultiStageConfigurableApp(BaseApplication):
                 _, ext = splitext(item)
 
                 if ext == '.json':
-                    self._configure_from_json(item)
+                    self._configure_from_json(item, **opts)
                 elif ext in ('.cfg', '.py'):
-                    self._configure_from_pyfile(item)
+                    self._configure_from_pyfile(item, **opts)
                 else:
-                    self._configure_from_module(item)
+                    self._configure_from_module(item, **opts)
 
             elif isinstance(item, (types.ModuleType, type)):
-                self._configure_from_object(item)
+                self._configure_from_object(item, **opts)
 
             elif hasattr(item, 'items'):
                 # assume everything else is a mapping like object; ``.items()``
@@ -165,11 +165,7 @@ class MultiStageConfigurableApp(BaseApplication):
                 # @TODO: This doesn't handle the edge case of using a tuple of
                 # two element tuples to config; but Flask does that. IMO, if
                 # you do that, you're a monster.
-                self._configure_from_mapping(
-                    item,
-                    whitelist_keys=opts['whitelist_keys_from_mappings'],
-                    whitelist=opts['whitelist']
-                )
+                self._configure_from_mapping(item, **opts)
 
             else:
                 raise TypeError("Could not determine a valid type for this"
@@ -178,7 +174,7 @@ class MultiStageConfigurableApp(BaseApplication):
         # we just finished here, run the post configure callbacks
         self._run_post_configure_callbacks(args)
 
-    def _configure_from_json(self, item):
+    def _configure_from_json(self, item, **kwargs):
         """Load configuration from a JSON file.
 
         This method will essentially just ``json.load`` the file, grab the
@@ -188,13 +184,18 @@ class MultiStageConfigurableApp(BaseApplication):
             items (str):
                 The path to the JSON file to load.
 
+        Kwargs:
+            ignore_missing (bool):
+                Should we throw an exception if we cannot locate the requested
+                JSON file? Default is False, to throw an exception.
+
         Returns:
             fleaker.App:
                 Returns itself.
         """
-        return self._configure_from_file('from_json', item)
+        return self._configure_from_file('from_json', item, **kwargs)
 
-    def _configure_from_pyfile(self, item):
+    def _configure_from_pyfile(self, item, **kwargs):
         """Load configuration from a Python file. Python files include Python
         source files (``.py``) and ConfigParser files (``.cfg``).
 
@@ -205,13 +206,18 @@ class MultiStageConfigurableApp(BaseApplication):
             items (str):
                 The path to the Python file to load.
 
+        Kwargs:
+            ignore_missing (bool):
+                Should we throw an exception if we cannot locate the requested
+                JSON file? Default is False, to throw an exception.
+
         Returns:
             fleaker.App:
                 Returns itself.
         """
-        return self._configure_from_file('from_pyfile', item)
+        return self._configure_from_file('from_pyfile', item, **kwargs)
 
-    def _configure_from_file(self, method, item):
+    def _configure_from_file(self, method, item, **kwargs):
         """Wrapper method to call one of Flask's file ``config_from`` methods.
 
         This is a small wrapper that encapsulates the common error handling we
@@ -229,6 +235,11 @@ class MultiStageConfigurableApp(BaseApplication):
                 The sole argument that should be passed to the method
                 associated with ``method``. Nominally, this is the path to
                 a file.
+
+        Kwargs:
+            ignore_missing (bool):
+                Should we throw an exception if we cannot locate the requested
+                JSON file? Default is False, to throw an exception.
 
         Raises:
             fleaker.exceptions.ConfigurationError:
@@ -259,14 +270,14 @@ class MultiStageConfigurableApp(BaseApplication):
 
         # since ``silent=True`` is passed to the underlying Flask method,
         # a False return means we couldn't find what we needed
-        if not result:
+        if not result and not kwargs.get('ignore_missing'):
             full_path = os.path.join(self.root_path, item)
             raise ConfigurationError(self.missing_error.format(item,
                                                                full_path))
 
         return self
 
-    def _configure_from_module(self, item):
+    def _configure_from_module(self, item, **kwargs):
         """Configure from a module by import path.
 
         Effectively, you give this an absolute or relative import path, it will
@@ -276,6 +287,11 @@ class MultiStageConfigurableApp(BaseApplication):
         Args:
             item (str):
                 A string pointing to a valid import path.
+
+        Kwargs:
+            ignore_missing (bool):
+                Should we throw an exception if we cannot locate the requested
+                JSON file? Default is False, to throw an exception.
 
         Returns:
             fleaker.App:
@@ -304,25 +320,24 @@ class MultiStageConfigurableApp(BaseApplication):
                 raise ConfigurationError(
                     self.permissions_error.format(item, full_path)
                 )
-            else:
+            elif not kwargs.get('ignore_missing'):
                 # resource doesn't exist, raise a different error
                 raise ConfigurationError(
                     self.missing_error.format(item, full_path)
                 )
-
-        self.config.from_object(obj)
+        else:
+            self.config.from_object(obj)
 
         return self
 
-    def _configure_from_mapping(self, item, whitelist_keys=False,
-                                whitelist=None):
+    def _configure_from_mapping(self, item, **kwargs):
         """Configure from a mapping, or dict, like object.
 
         Args:
             item (dict):
                 A dict-like object that we can pluck values from.
 
-        Keyword Args:
+        Kwargs:
             whitelist_keys (bool):
                 Should we whitelist the keys before adding them to the
                 configuration? If no whitelist is provided, we use the
@@ -336,6 +351,9 @@ class MultiStageConfigurableApp(BaseApplication):
             fleaker.App:
                 Returns itself.
         """
+        whitelist = kwargs.get('whitelist', False)
+        whitelist_keys = kwargs.get('whitelist_keys')
+
         if whitelist is None:
             whitelist = self.config.keys()
 
@@ -346,7 +364,7 @@ class MultiStageConfigurableApp(BaseApplication):
 
         return self
 
-    def _configure_from_object(self, item):
+    def _configure_from_object(self, item, **kwargs):
         """Configure from any Python object based on it's attributes.
 
         Args:
