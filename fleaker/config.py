@@ -132,8 +132,19 @@ class MultiStageConfigurableApp(BaseApplication):
                 raised. If this is ``True``, then no error will be raised and
                 we will silently skip that configurable.
         """
+        # while this looks strange, we HAVE to use kwargs here because we're
+        # using *args and Python2 doesn't let you have named kwargs with *args;
+        # however, we still want our set of kwargs to be strict
+        expected_keys = set(['whitelist_keys_from_mappings', 'whitelist',
+                             'ignore_missing'])
+        unexpected_keys = set(kwargs.keys()) - expected_keys
+
+        if unexpected_keys:
+            raise TypeError("configure(): got unexpected keyword arguments:"
+                            " {}".format(', '.join(unexpected_keys)))
+
         original_opts = {
-            'whitelist_keys_from_mappings': kwargs.get(
+            'whitelist_keys': kwargs.get(
                 'whitelist_keys_from_mappings', False),
             'whitelist': kwargs.get('whitelist'),
             'ignore_missing': kwargs.get('ignore_missing', False),
@@ -567,7 +578,11 @@ class ConfigOption(object):
             options = options.copy()
 
         if self.whitelist_keys_from_mappings is not MISSING:
-            options['whitelist_keys_from_mappings'] = self.whitelist_keys_from_mappings
+            # @TODO: The option that `configure` uses is called
+            # `whitelist_keys`, fix this; this is a temp fix for now, we might
+            # want a rename? Not sure?
+            # options['whitelist_keys_from_mappings'] = self.whitelist_keys_from_mappings
+            options['whitelist_keys'] = self.whitelist_keys_from_mappings
 
         if self.whitelist is not MISSING:
             options['whitelist'] = self.whitelist

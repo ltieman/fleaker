@@ -373,15 +373,18 @@ def test_config_config_option_does_not_override_configure():
     """
     app = _create_app()
 
-    opt = ConfigOption('.configs.config')
+    opt = ConfigOption({
+        'THIRD_OPTION': 'from mapping',
+        'FLEAKER_CONFIG_MAPPING_LOADED': True,
+    })
 
     app.configure(opt, whitelist=['THIRD_OPTION'],
                   whitelist_keys_from_mappings=True)
 
     # since a `whitelist` is passed in the call to configure, it should still
     # be used even though `ConfigOption` doesn't have one
-    assert 'FLEAKER_CONFIG_PY_LOADED' not in app.config
-    assert app.config['THIRD_OPTION'] == 'from config.py'
+    assert 'FLEAKER_CONFIG_MAPPING_LOADED' not in app.config
+    assert app.config['THIRD_OPTION'] == 'from mapping'
 
 
 def test_config_config_option_share_settings():
@@ -413,10 +416,34 @@ def test_config_config_option_does_not_override(config_file):
         app.configure(opt, '.configs.config', '.configs.really_dne')
 
 
-def test_config_config_option_whitelist():
-    # @TODO: Test where we use whitlist and whitelist_keys_from_mappings via
-    # ConfigOption and not configure
-    pytest.fail()
+@pytest.mark.parametrize("configure_opts", (
+    {},
+    {
+        "whitelist": ('THIRD_OPTION',)
+    },
+    {
+        "whitelist_keys_from_mappings": False,
+    },
+    {
+        "whitelist": ('THIRD_OPTION',),
+        "whitelist_keys_from_mappings": False,
+    },
+))
+def test_config_config_option_whitelist(configure_opts):
+    """Ensure that powering whitelists through ConfigOption works."""
+    app = _create_app()
+
+    dct = {
+        'FLEAKER_CONFIG_MAPPING_LOADED': True,
+        'CANARY': True,
+    }
+
+    opt = ConfigOption(dct, whitelist_keys_from_mappings=True,
+                       whitelist=('FLEAKER_CONFIG_MAPPING_LOADED',))
+    app.configure(opt, **configure_opts)
+
+    assert app.config['FLEAKER_CONFIG_MAPPING_LOADED']
+    assert 'CANARY' not in app.config
 
 
 def test_enable_doctest():
@@ -526,3 +553,17 @@ def test_config_import_module_no_owner(config_file, mocker):
     assert isinstance(exc.value, FleakerException)
     assert isinstance(exc.value, IOError)
     assert str(exc.value) == err_msg
+
+
+def test_config_configure_bad_kwarg_errors():
+    """Ensure that an unknown kwarg passed to configure causes an error."""
+    app = _create_app()
+
+    with pytest.raises(TypeError) as exc:
+        app.configure('.configs.config', bad=True, error=True)
+
+    # due to Python set ordering being unpredictable, testing this is tricky
+    expected_err = ("configure(): got unexpected keyword arguments: ")
+    assert str(exc.value).startswith(expected_err)
+    assert (str(exc.value).endswith('bad, error')
+            or str(exc.value).endswith('error, bad'))
