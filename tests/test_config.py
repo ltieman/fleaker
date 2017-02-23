@@ -11,6 +11,8 @@ Provides test for the common configuration options.
 
 import os
 
+from copy import deepcopy
+
 import pytest
 
 from werkzeug.datastructures import ImmutableDict
@@ -451,9 +453,42 @@ def test_enable_doctest():
 
 
 def test_config_option_update_options():
+    """Ensure the ConfigOption.update_option works."""
     # @TODO: Test this method; one test that tests both copy as True and False
     # and provides all args to ConfigOption in their non-default value
-    pytest.fail()
+    cfg = {
+        'whitelist_keys_from_mappings': True,
+        'ignore_missing': True,
+        'whitelist': ('FOO',),
+    }
+
+    opt = ConfigOption('', **cfg)
+
+    # this key gets renamed, so mirror that
+    cfg['whitelist_keys'] = cfg.pop('whitelist_keys_from_mappings')
+
+    cfg_update = {
+        'whitelist_keys_from_mappings': False,
+        'ignore_missing': False,
+        'whitelist': ('BAR',),
+    }
+
+    original_cfg_update = deepcopy(cfg_update)
+
+    new_cfg = ConfigOption.update_options(cfg_update, copy=True)
+
+    # ensure we didn't mutate the original opts
+    assert cfg_update == original_cfg_update
+    # @TODO: whitelist_keys is gonna fail
+    assert new_cfg == cfg
+
+    # now repeat with copy=False and ensure it's updated in place
+    new_cfg = ConfigOption.update_options(cfg_update, copy=False)
+
+    assert cfg_update != original_cfg_update
+    # @TODO: whitelist_keys gone fail
+    assert cfg_update == cfg
+    assert new_cfg == cfg
 
 
 @pytest.mark.parametrize("config_file", MISSING_CONFIGS)
