@@ -24,7 +24,7 @@ from fleaker.exceptions import ConfigurationError, FleakerException
 
 import tests.configs.settings as settings
 
-from tests._compat import mock
+from tests._compat import PY2, mock
 
 
 # a list of non-existent configuration files of all configuration file types,
@@ -65,9 +65,8 @@ def _create_app():
     return fleaker.App('tests')
 
 
-# @TODO: ALL of these tests should have their names prefixed with config_, like
-# so: test_config_basic_configure;
-# @TODO: Document the above rule.
+# @TODO (tests): Document the rule that tests must begin with a common module
+# prefix
 def test_config_basic_configure():
     """Ensure generic configure method works."""
     # since this app is defined in a module, not a package, don't use
@@ -86,10 +85,6 @@ def test_config_configure_advanced():
     """Ensure this one method properly configures based on the entire
     environment.
     """
-    # @TODO: Finish more configure tests. Add some for more esoteric
-    # configuration methods and test the configuration methods directly
-    # how do I want configuration to work? just scaffold that shiznit out...
-
     # since this app is defined in a module, not a package, don't use
     # ``__name__``; ``tests`` is effectively our name.
     app = _create_app()
@@ -393,16 +388,27 @@ def test_config_config_option_share_settings():
     """Ensure that arguments from `configure` work with ConfigOption."""
     app = _create_app()
 
-    opt = ConfigOption('.configs.config', whitelist_keys_from_mappings=True)
-    opt2 = ConfigOption('./configs/config.cfg')
+    opts = {
+        'FLEAKER_CONFIG_DICT_LOADED': True,
+        'THIRD_OPTION': 'loaded from dict',
+    }
 
-    app.configure(opt, opt2, whitelist=['THIRD_OPTION'])
+    opts3 = {
+        'DICT_TEST': True
+    }
+
+    opt = ConfigOption(opts, whitelist_keys_from_mappings=True)
+    opt2 = ConfigOption('./configs/config.cfg')
+    opt3 = ConfigOption(opts3)
+
+    app.configure(opt2, opt, opt3, whitelist=['THIRD_OPTION'])
 
     # ensure that the whitelist is applied to the first ConfigOption, but not
     # the second, since it didn't have the whitelist_keys call
     assert app.config['FLEAKER_CONFIG_CFG_LOADED']
-    assert app.config['THIRD_OPTION'] == 'loaded from config.cfg'
-    assert 'FLEAKER_CONFIG_PY_LOADED' not in app.config, 'This option doesnt work on files...'
+    assert app.config['THIRD_OPTION'] == 'loaded from dict'
+    assert app.config['DICT_TEST']
+    assert 'FLEAKER_CONFIG_DICT_LOADED' not in app.config
 
 
 @pytest.mark.parametrize("config_file", MISSING_CONFIGS)
@@ -448,24 +454,15 @@ def test_config_config_option_whitelist(configure_opts):
     assert 'CANARY' not in app.config
 
 
-def test_enable_doctest():
-    pytest.fail("Please enable doctests for ConfigOptions' update_options")
-
-
 def test_config_option_update_options():
     """Ensure the ConfigOption.update_option works."""
-    # @TODO: Test this method; one test that tests both copy as True and False
-    # and provides all args to ConfigOption in their non-default value
-    cfg = {
+    base_opts = {
         'whitelist_keys_from_mappings': True,
         'ignore_missing': True,
         'whitelist': ('FOO',),
     }
 
-    opt = ConfigOption('', **cfg)
-
-    # this key gets renamed, so mirror that
-    cfg['whitelist_keys'] = cfg.pop('whitelist_keys_from_mappings')
+    opt = ConfigOption('', **base_opts)
 
     cfg_update = {
         'whitelist_keys_from_mappings': False,
@@ -475,20 +472,18 @@ def test_config_option_update_options():
 
     original_cfg_update = deepcopy(cfg_update)
 
-    new_cfg = ConfigOption.update_options(cfg_update, copy=True)
+    new_cfg = opt.update_options(cfg_update, copy=True)
 
     # ensure we didn't mutate the original opts
     assert cfg_update == original_cfg_update
-    # @TODO: whitelist_keys is gonna fail
-    assert new_cfg == cfg
+    assert new_cfg == base_opts
 
     # now repeat with copy=False and ensure it's updated in place
-    new_cfg = ConfigOption.update_options(cfg_update, copy=False)
+    new_cfg = opt.update_options(cfg_update, copy=False)
 
     assert cfg_update != original_cfg_update
-    # @TODO: whitelist_keys gone fail
-    assert cfg_update == cfg
-    assert new_cfg == cfg
+    assert cfg_update == base_opts
+    assert new_cfg == base_opts
 
 
 @pytest.mark.parametrize("config_file", MISSING_CONFIGS)
@@ -497,7 +492,6 @@ def test_config_import_missing(config_file):
     """
     app = _create_app()
 
-    # @TODO: This needs a better error message.
     full_path = os.path.join(os.path.dirname(__file__), config_file)
     err_msg = ("Could not find configuration item '{}'! Searched path: "
                "{}.".format(config_file, full_path))
@@ -506,9 +500,6 @@ def test_config_import_missing(config_file):
 
     # now ensure exception inheritance is fine
     assert isinstance(exc.value, FleakerException)
-    # @TODO: Or should this be an IOError? Either way, pick only one base
-    # exception inheritance, and document that. I think IOError makes more
-    # sense... It CAN be both... but that seems aggressive
     assert isinstance(exc.value, IOError)
     assert str(exc.value) == err_msg
 
@@ -519,7 +510,6 @@ def test_config_import_missing_module(config_file):
     """
     app = _create_app()
 
-    # @TODO: This needs a better error message.
     path = config_file[1:] if config_file.startswith('.') else config_file
     path = path.replace('.', os.path.sep) + '.py'
     full_path = os.path.join(os.path.dirname(__file__), path)
@@ -530,9 +520,6 @@ def test_config_import_missing_module(config_file):
 
     # now ensure exception inheritance is fine
     assert isinstance(exc.value, FleakerException)
-    # @TODO: Or should this be an IOError? Either way, pick only one base
-    # exception inheritance, and document that. I think IOError makes more
-    # sense... It CAN be both... but that seems aggressive
     assert isinstance(exc.value, IOError)
     assert str(exc.value) == err_msg
 
@@ -546,7 +533,16 @@ def test_config_import_no_owner(config_file, mocker):
 
     io_err_msg = ("[Errno 13] Permission denied: "
                   "'tests/configs/{}'".format(config_file))
-    mocker.patch('flask.config.open'.format(__name__), side_effect=IOError(io_err_msg))
+
+    # WHERE you patch `open` differs between Python 2 and Python 3; with Python
+    # 2 it has to be mocked IN the module using `open`, in Python 3 you can
+    # mock out builtins.open and that affects all modules; so... handle it
+    if PY2:
+        mocker.patch('flask.config.open'.format(__name__),
+                     side_effect=IOError(io_err_msg))
+    else:
+        mocker.patch('builtins.open'.format(__name__),
+                     side_effect=IOError(io_err_msg))
 
     full_path = os.path.join(os.path.dirname(__file__), config_file)
     err_msg = ("Found configuration item '{}' at {} but could not load it! Are"
@@ -572,11 +568,14 @@ def test_config_import_module_no_owner(config_file, mocker):
     """
     app = _create_app()
 
+    # all of our relative imports need to be prefixed with `tests` in order to
+    # properly mock out
+    if config_file.startswith('.'):
+        config_file = 'tests' + config_file
+
     mocker.patch.dict('sys.modules', {config_file: None})
 
-    path = config_file[1:] if config_file.startswith('.') else config_file
-    path = path.replace('.', os.path.sep) + '.py'
-    full_path = os.path.join(os.path.dirname(__file__), path)
+    full_path = config_file.replace('.', os.path.sep) + '.py'
     err_msg = ("Found configuration item '{}' at {} but could not load it! Are"
                " the permissions properly configured?".format(config_file,
                                                               full_path))
