@@ -7,7 +7,7 @@ section.
 
 ## Next Steps
 
-* Logging - 16 hours
+* Logging - 24 hours
   * Configured via a standardized series of config values. Takes arguments to
     create_app to override these values.
   * Extended via class variables, e.g., the standard logger is a class variable
@@ -23,16 +23,17 @@ section.
   * Should add an extra method to explicitly re-init the login manager. For
     example, a `register_login_manager`, if registering it at app creation time
     simply isn't feasible.
-* Sentry Integration - 8 hours
+* Sentry Integration - 12 hours
   * Adds an `extra_requires` for Sentry (e.g., `fleaker[sentry]`) that installs
     `raven`.
   * Adds a new composable app mixin for Sentry registration.
   * Sentry is still configured from the environment, as expected.
   * Adds a `post_configure` callback that will look for the proper config
     values and, when they are present, setup Sentry integration.
-* Release Improvements - 8 hours
+* Release Improvements - 12 hours
   * Some system to automate the creation of tags, writing of changelogs,
     version bumping and, eventually, upload to PyPI.
+  * Open source it.
 * Base Class for Flask-Classful - 16 hours
   * Encapsulate all of our existing Flask-Classful base views and expose them
     in some `BaseView` class.
@@ -50,7 +51,7 @@ section.
       a `register_blueprints` from all module paths provided and, if found,
       runs that for you which is sort of your hook (similar to some of what
       pytest does for module level tests).
-* Tasks Integration - 8 hours
+* Tasks Integration - 16 hours
   * For now, we will only expose our helper methods, such as `docker_task` to
     end users.
   * Should add a `fleaker.fabric` and `fleaker.invoke` package for housing our
