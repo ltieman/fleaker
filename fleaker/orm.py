@@ -27,6 +27,8 @@ Attributes:
 :license: BSD, see LICENSE for more details.
 """
 
+from __future__ import absolute_import
+
 from functools import partial
 
 from werkzeug.local import LocalProxy
