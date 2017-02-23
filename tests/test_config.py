@@ -68,7 +68,7 @@ def _create_app():
 # @TODO: ALL of these tests should have their names prefixed with config_, like
 # so: test_config_basic_configure;
 # @TODO: Document the above rule.
-def test_basic_configure():
+def test_config_basic_configure():
     """Ensure generic configure method works."""
     # since this app is defined in a module, not a package, don't use
     # ``__name__``; ``tests`` is effectively our name.
@@ -82,7 +82,7 @@ def test_basic_configure():
 
 
 @pytest.mark.environ(FLEAKER_CONFIG_LOADED_FROM_ENV=True)
-def test_configure_advanced():
+def test_config_configure_advanced():
     """Ensure this one method properly configures based on the entire
     environment.
     """
@@ -118,7 +118,7 @@ def test_configure_advanced():
     assert app.config['FLEAKER_CONFIG_LOADED_FROM_ENV'] == 'True'
 
 
-def test_configure_with_whitelist_keys():
+def test_config_configure_with_whitelist_keys():
     """Ensure that the ``whitelist_keys`` kwarg works in ``configure``."""
     app = _create_app()
 
@@ -149,7 +149,7 @@ def test_configure_with_whitelist_keys():
 
 
 @pytest.mark.environ(FLEAKER_CONFIG_LOADED_FROM_ENV=True)
-def test_configure_from_environment():
+def test_config_configure_from_environment():
     """Ensure that we can quickly configure from the environment."""
     app = _create_app()
     app.configure_from_environment()
@@ -159,7 +159,7 @@ def test_configure_from_environment():
 
 @pytest.mark.environ(FLEAKER_SHOULD_NOT_BE_PRESENT=True,
                      CANARY='Loaded from env')
-def test_configure_from_environment_whitelist():
+def test_config_configure_from_environment_whitelist():
     """Ensure configuring from the env with a whitelist works."""
     app = _create_app()
 
@@ -175,7 +175,7 @@ def test_configure_from_environment_whitelist():
 @pytest.mark.environ(FLEAKER_SHOULD_NOT_BE_PRESENT=True,
                      CANARY='Loaded from env',
                      FLEAKER_SHOULD_BE_PRESENT=True)
-def test_configure_from_environment_explicit_whitelist():
+def test_config_configure_from_environment_explicit_whitelist():
     """Ensure configure from env with a provided whitelist works."""
     app = _create_app()
 
@@ -189,7 +189,7 @@ def test_configure_from_environment_explicit_whitelist():
     assert app.config['FLEAKER_SHOULD_BE_PRESENT'] == 'True'
 
 
-def test_configure_from_mapping_whitelist():
+def test_config_configure_from_mapping_whitelist():
     """Ensure configuring from only a mapping with a whitelist works."""
     app = _create_app()
 
