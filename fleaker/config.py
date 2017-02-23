@@ -144,7 +144,7 @@ class MultiStageConfigurableApp(BaseApplication):
                             " {}".format(', '.join(unexpected_keys)))
 
         original_opts = {
-            'whitelist_keys': kwargs.get(
+            'whitelist_keys_from_mappings': kwargs.get(
                 'whitelist_keys_from_mappings', False),
             'whitelist': kwargs.get('whitelist'),
             'ignore_missing': kwargs.get('ignore_missing', False),
@@ -349,21 +349,21 @@ class MultiStageConfigurableApp(BaseApplication):
                 A dict-like object that we can pluck values from.
 
         Kwargs:
-            whitelist_keys (bool):
+            whitelist_keys_from_mappings (bool):
                 Should we whitelist the keys before adding them to the
                 configuration? If no whitelist is provided, we use the
                 pre-existing config keys as a whitelist.
             whitelist (list[str]):
                 An explicit list of keys that should be allowed. If provided
-                and ``whitelist_keys`` is true, we will use that as our
-                whitelist instead of pre-existing app config keys.
+                and ``whitelist_keys_from_mappings`` is true, we will use that
+                as our whitelist instead of pre-existing app config keys.
 
         Returns:
             fleaker.App:
                 Returns itself.
         """
         whitelist = kwargs.get('whitelist', False)
-        whitelist_keys = kwargs.get('whitelist_keys')
+        whitelist_keys = kwargs.get('whitelist_keys_from_mappings')
 
         if whitelist is None:
             whitelist = self.config.keys()
@@ -413,8 +413,11 @@ class MultiStageConfigurableApp(BaseApplication):
             fleaker.base.BaseApplication:
                 Returns itself.
         """
-        self._configure_from_mapping(os.environ, whitelist_keys=whitelist_keys,
-                                     whitelist=whitelist)
+        self._configure_from_mapping(
+            os.environ
+            whitelist_keys_from_mappings=whitelist_keys,
+            whitelist=whitelist
+        )
 
         return self
 
@@ -554,10 +557,15 @@ class ConfigOption(object):
 
         Sample usage:
 
-        >>> opts = {}
-        >>> config_option = ConfigOption(ignore_missing=True)
-        >>> config_option.update_options(opts)
-        {'ignore_missing': True, 'whitelist_keys_from_mappings': False, 'whitelist': None}
+        >>> configuration = {'foo': 'bar'}
+        >>> new_opts = {'whitelist_keys_from_mappings': False,
+        ...             'whitelist': None}
+        >>> config_option = ConfigOption(configuration, ignore_missing=True)
+        >>> actual = config_option.update_options(new_opts)
+        >>> expected = {'ignore_missing': True, 'whitelist': None,
+        ...             'whitelist_keys_from_mappings': False}
+        >>> actual == expected
+        True
 
         Args:
             options (dict);
@@ -578,11 +586,9 @@ class ConfigOption(object):
             options = options.copy()
 
         if self.whitelist_keys_from_mappings is not MISSING:
-            # @TODO: The option that `configure` uses is called
-            # `whitelist_keys`, fix this; this is a temp fix for now, we might
-            # want a rename? Not sure?
-            # options['whitelist_keys_from_mappings'] = self.whitelist_keys_from_mappings
-            options['whitelist_keys'] = self.whitelist_keys_from_mappings
+            options['whitelist_keys_from_mappings'] = (
+                self.whitelist_keys_from_mappings
+            )
 
         if self.whitelist is not MISSING:
             options['whitelist'] = self.whitelist
