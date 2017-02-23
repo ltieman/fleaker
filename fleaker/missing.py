@@ -27,8 +27,8 @@ class MissingSentinel(object):
     True
     >>> False is not MISSING
     True
-    >>> print("success") if not MISSING else print("failure")
-    "success"
+    >>> "success" if not MISSING else "failure"
+    'success'
 
     .. versionadded:: 0.1.0
     """
@@ -64,8 +64,8 @@ class MissingDictSentinel(MissingSentinel, ImmutableDict):
     True
     >>> False is not MISSING_DICT
     True
-    >>> print("success") if not MISSING_DICT else print("failure")
-    "success"
+    >>> "success" if not MISSING_DICT else "failure"
+    'success'
 
     .. versionadded:: 0.1.0
     """

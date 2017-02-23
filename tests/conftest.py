@@ -7,12 +7,33 @@
     :license: BSD, see LICENSE for more details
 """
 
+import importlib
 import os
 
 import pytest
 
 from fleaker import App, MISSING
 from fleaker._compat import text_type
+
+
+def pytest_configure():
+    """Pre-configuration steps before running pytest."""
+    patch_flask_for_doctest()
+
+
+def patch_flask_for_doctest():
+    """
+    Patch flask magic objects to keep them from raising
+    RuntimeErrors during doctest discovery.
+    https://github.com/pallets/flask/issues/1680
+    """
+    flask = importlib.import_module('flask')
+    object.__setattr__(flask.request, '__wrapped__', None)
+    object.__setattr__(flask.session, '__wrapped__', None)
+    object.__setattr__(flask.current_app, '__wrapped__', None)
+
+    fleaker_orm = importlib.import_module('fleaker.orm')
+    object.__setattr__(fleaker_orm.db, '__wrapped__', None)
 
 
 @pytest.fixture(autouse=True)
