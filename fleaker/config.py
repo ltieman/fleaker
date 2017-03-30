@@ -414,7 +414,7 @@ class MultiStageConfigurableApp(BaseApplication):
                 Returns itself.
         """
         self._configure_from_mapping(
-            os.environ
+            os.environ,
             whitelist_keys_from_mappings=whitelist_keys,
             whitelist=whitelist
         )
