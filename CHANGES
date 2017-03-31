@@ -3,6 +3,16 @@ Fleaker Changelog
 
 Here you can see all changes between each release of Fleaker.
 
+Version 0.2.1
+-------------
+
+Reupload to fix download URL, released on March 31st 2017.
+
+Bug fixes:
+
+- Download URL is correct now.
+- Description is fixed.
+
 Version 0.2.0
 -------------
 

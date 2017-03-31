@@ -14,9 +14,12 @@
     :license: BSD, see LICENSE for more details.
 """
 from __future__ import print_function
+
+import argparse
 import sys
 import os
 import re
+
 from datetime import datetime, date
 from subprocess import Popen, PIPE
 
@@ -75,9 +78,9 @@ def set_init_version(version):
     set_filename_version('fleaker/__init__.py', version, '__version__')
 
 
-def build_and_upload():
+def build_and_upload(pypi_alias):
     Popen([sys.executable, 'setup.py', 'release', 'sdist', 'bdist_wheel',
-           'upload', '-r', 'pypi']).wait()
+           'upload', '-r', pypi_alias]).wait()
 
 
 def fail(message, *args):
@@ -114,6 +117,13 @@ def update_download_url(filename, version):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=('Release a new version of'
+                                                  ' Fleaker'))
+    parser.add_argument('--test', action='store_true')
+    args = parser.parse_args()
+
+    pypi_alias = 'pypi' if not args.test else 'pypitest'
+
     os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 
     rv = parse_changelog()
@@ -142,7 +152,7 @@ def main():
     update_download_url('setup.py', tag_version)
     make_git_commit('Bump version number to %s', version)
     make_git_tag(tag_version)
-    build_and_upload()
+    build_and_upload(pypi_alias)
     set_init_version(dev_version)
 
 
