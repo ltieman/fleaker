@@ -103,7 +103,7 @@ def make_git_commit(message, *args):
 
 def make_git_tag(tag):
     info('Tagging "%s"', tag)
-    Popen(['git', 'tag', tag]).wait()
+    Popen(['git', 'tag', '-s', '-a', tag]).wait()
 
 
 def update_download_url(filename, version):
@@ -120,7 +120,8 @@ def main():
         fail('Could not parse changelog')
 
     version, release_date, codename = rv
-    version = 'v' + version
+    version = version
+    tag_version = 'v' + version
     dev_version = version + '-dev'
 
     info('Releasing %s (codename %s, release date %s)',
@@ -139,7 +140,7 @@ def main():
     set_init_version(version)
     make_git_commit('Bump version number to %s', version)
     update_download_url('setup.py', version)
-    make_git_tag(version)
+    make_git_tag(tag_version)
     build_and_upload()
     set_init_version(dev_version)
 
