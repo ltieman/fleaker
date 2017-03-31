@@ -47,15 +47,6 @@ def parse_changelog():
             return version, parse_date(datestr), codename
 
 
-def bump_version(version):
-    try:
-        parts = map(int, version.split('.'))
-    except ValueError:
-        fail('Current version is not numeric')
-    parts[-1] += 1
-    return '.'.join(map(str, parts))
-
-
 def parse_date(string):
     string = _date_clean_re.sub(r'\1', string)
     return datetime.strptime(string, '%B %d %Y')
@@ -115,6 +106,12 @@ def make_git_tag(tag):
     Popen(['git', 'tag', tag]).wait()
 
 
+def update_download_url(filename, version):
+    full_url = 'https://github.com/croscon/fleaker/archive/{}.tar.gz'
+    full_url = full_url.format(version)
+    set_filename_version('setup.py', full_url, 'download_url')
+
+
 def main():
     os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -123,7 +120,8 @@ def main():
         fail('Could not parse changelog')
 
     version, release_date, codename = rv
-    dev_version = bump_version(version) + '-dev'
+    version = 'v' + version
+    dev_version = version + '-dev'
 
     info('Releasing %s (codename %s, release date %s)',
          version, codename, release_date.strftime('%d/%m/%Y'))
@@ -140,6 +138,7 @@ def main():
 
     set_init_version(version)
     make_git_commit('Bump version number to %s', version)
+    update_download_url('setup.py', version)
     make_git_tag(version)
     build_and_upload()
     set_init_version(dev_version)
