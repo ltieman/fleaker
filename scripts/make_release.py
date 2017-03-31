@@ -76,7 +76,8 @@ def set_init_version(version):
 
 
 def build_and_upload():
-    Popen([sys.executable, 'setup.py', 'release', 'sdist', 'bdist_wheel', 'upload']).wait()
+    Popen([sys.executable, 'setup.py', 'release', 'sdist', 'bdist_wheel',
+           'upload', '-r', 'pypi']).wait()
 
 
 def fail(message, *args):
@@ -139,7 +140,7 @@ def main():
 
     set_init_version(version)
     make_git_commit('Bump version number to %s', version)
-    update_download_url('setup.py', version)
+    update_download_url('setup.py', tag_version)
     make_git_tag(tag_version)
     build_and_upload()
     set_init_version(dev_version)
