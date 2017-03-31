@@ -139,8 +139,8 @@ def main():
         fail('You have uncommitted changes in git')
 
     set_init_version(version)
-    make_git_commit('Bump version number to %s', version)
     update_download_url('setup.py', tag_version)
+    make_git_commit('Bump version number to %s', version)
     make_git_tag(tag_version)
     build_and_upload()
     set_init_version(dev_version)
