@@ -30,15 +30,12 @@ section.
   * Sentry is still configured from the environment, as expected.
   * Adds a `post_configure` callback that will look for the proper config
     values and, when they are present, setup Sentry integration.
-* Release Improvements - 12 hours
-  * Some system to automate the creation of tags, writing of changelogs,
-    version bumping and, eventually, upload to PyPI.
-  * Open source it.
 * Base Class for Flask-Classful - 16 hours
   * Encapsulate all of our existing Flask-Classful base views and expose them
     in some `BaseView` class.
   * Should **NOT** be an app mixin and should just be a regular class.
   * We can iterate on this later as we find new items.
+  * This is sort of blocked by [Flask-Classful#41](https://github.com/teracyhq/flask-classful/issues/41).
 * Automatic Blueprint Registration - 40 hours
   * This is still HIGHLY conceptual and experimental, so the final
     implementation may end up changing. My initial thoughts are:
@@ -61,6 +58,13 @@ section.
 * Custom Test Class - 8 hours
   * This is fully described and documented in
     [#31](https://github.com/croscon/fleaker/issues/31).
+* Fixtures
+  * Module named `fixtures` with a submodule named `providers`.
+    * The `providers` module should have a bunch of Faker providers that create
+      instances or payloads for models.
+    * The `fixtures` module will be a bunch of runnable scripts that will
+      consume the `providers` to create human testable environments for
+      projects.
 
 ## Thoughts and Ideas:
 
