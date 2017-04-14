@@ -13,6 +13,7 @@ tutorial-style docs for Fleaker's various features.
    building-your-own-app
    components
    orm
+   peewee
 
 API Reference
 -------------

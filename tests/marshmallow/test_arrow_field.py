@@ -1,8 +1,9 @@
 # ~*~ coding: utf-8 ~*~
 """Unit tests for the Arrow Marshmallow field."""
 
-import arrow
 import pytest
+
+arrow = pytest.importorskip('arrow')
 
 from marshmallow import ValidationError
 

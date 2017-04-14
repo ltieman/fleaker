@@ -1,8 +1,9 @@
 # ~*~ coding: utf-8 ~*~
 """Unit tests for the Pendulum Marshmallow field."""
 
-import pendulum
 import pytest
+
+pendulum = pytest.importorskip('pendulum')
 
 from marshmallow import ValidationError
 
