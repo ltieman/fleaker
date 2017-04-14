@@ -62,7 +62,7 @@ def install():
 
     setup(name='fleaker',
           version=version,
-          download_url='https://github.com/croscon/fleaker/archive/v0.2.1.tar.gz',
+          download_url='https://github.com/croscon/fleaker/archive/v0.3.0.tar.gz',
           description='Tools and extensions to make Flask development easier.',
           url='https://github.com/croscon/fleaker',
           author='Croscon Consulting',

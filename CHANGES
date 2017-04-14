@@ -3,6 +3,22 @@ Fleaker Changelog
 
 Here you can see all changes between each release of Fleaker.
 
+Version 0.3.0
+-------------
+
+- A base model for Peewee that hooks into the application factory to use it's
+  database.
+- Datetime Peewee Fields for Arrow and Pendulum
+- A dumb JSON field for Peewee
+- A field signature mixin for enforcing unique constraints on nullable fields.
+- A mixin that allows for SQL `LIKE` searching on models.
+- Mixins that provide created, updated, and archived timestamps for all datetime
+  libraries that Fleaker supports
+- Add `bcrypt` as a module that must be installed if Peewee is selected (this
+  allows it to support the `PasswordField` out of the box.
+- Make Arrow, Pendulum, and Phonenumbers all optional installs
+- Add a bunch of docs
+
 Version 0.2.1
 -------------
 

@@ -6,10 +6,9 @@ tests.test_json
 Unit tests for Fleaker.json module.
 """
 
+import datetime
 import decimal
 
-import arrow
-import phonenumbers
 import pytest
 
 from fleaker._compat import text_type
@@ -17,6 +16,7 @@ from fleaker._compat import text_type
 
 def test_json_arrow(app):
     """Ensure that Arrow object serialize properly."""
+    arrow = pytest.importorskip('arrow')
     data = {
         'now': arrow.utcnow(),
         'past': arrow.utcnow().replace(years=-50),
@@ -44,26 +44,19 @@ def test_json_decimal(app):
     assert serialized['trailing_zeros'] == '2'
 
 
-def test_json_date(app):
+@pytest.mark.parametrize('now', (
+    datetime.datetime.utcnow(),
+    datetime.datetime.utcnow().date(),
+))
+def test_json_time(app, now):
     """Ensure that datetime.date objects serialize properly."""
-    now = arrow.utcnow()
-    data = {'now': now.date()}
-    serialized = app.json.loads(app.json.dumps(data))
-
-    assert serialized['now'] == text_type(now.date())
-
-
-def test_json_datetime(app):
-    """Ensure that datetime.datetime objects serialize properly."""
-    now = arrow.utcnow()
-    data = {'now': now.datetime}
-    serialized = app.json.loads(app.json.dumps(data))
-
-    assert serialized['now'] == text_type(now)
+    serialized = app.json.loads(app.json.dumps({'now': now}))
+    assert serialized['now'] == now.isoformat()
 
 
 def test_json_phonenumber(app):
     """Ensure that phonenumbers.PhoneNumber objects serialize properly."""
+    phonenumbers = pytest.importorskip('phonenumbers')
     data = {'tel': phonenumbers.parse("+13308286147")}
     serialized = app.json.loads(app.json.dumps(data))
 

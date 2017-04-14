@@ -9,18 +9,14 @@ import pytest
 from marshmallow import fields
 
 from fleaker.marshmallow import (
-    FleakerJSONSchema, Schema, PhoneNumberField, PendulumField, ArrowField,
-    ForeignKeyField, REQUIRED, STR_REQUIRED
+    FleakerJSONSchema, Schema, ForeignKeyField, REQUIRED, STR_REQUIRED
 )
 
 
 class UserSchema(Schema):
     first_name = fields.String(**STR_REQUIRED)
     last_name = fields.String(**STR_REQUIRED)
-    phone = PhoneNumberField(**REQUIRED)
     company_id = ForeignKeyField(**REQUIRED)
-    joined = PendulumField(format='iso', **REQUIRED)
-    last_login = ArrowField(allow_none=True, format='iso')
 
     class Meta(object):
         json_schema_filename = 'user.json'
@@ -71,3 +67,25 @@ def test_only_marshmallow_schemas_allowed(schema):
     """Ensure that only Marshmallow schemas are allowed."""
     with pytest.raises(TypeError):
         FleakerJSONSchema.write_schema_to_file(schema)
+
+
+@pytest.mark.parametrize('field_module,field_class', (
+    ('fleaker.marshmallow.fields.pendulum', 'PendulumField'),
+    ('fleaker.marshmallow.fields.arrow', 'ArrowField'),
+    ('fleaker.marshmallow.fields.phone_number', 'PhoneNumberField'),
+))
+def test_fleaker_field_output(field_module, field_class):
+    """Ensure that Fleaker custom fields output the right mappings."""
+    try:
+        field_obj = getattr(pytest.importorskip(field_module), field_class)
+    except (ImportError, AttributeError):
+        pytest.mark.skip("Test run doesn't support {}.".format(field_class))
+
+    class TestSchema(Schema):
+        test_field = field_obj()
+
+    schema = TestSchema()
+    json_schema = FleakerJSONSchema.generate_json_schema(schema)
+
+    assert (schema.fields['test_field']._jsonschema_type_mapping() ==
+            json_schema['properties']['test_field'])

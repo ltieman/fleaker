@@ -3,6 +3,8 @@
 
 import pytest
 
+pytest.importorskip('phonenumber')
+
 from marshmallow import ValidationError
 from marshmallow.fields import String
 

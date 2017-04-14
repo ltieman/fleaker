@@ -9,7 +9,8 @@ sqlite database for testing.
 
 import pytest
 
-SQLITE_DATABASE_NAME = 'test_db.db'
+from tests.constants import SQLITE_DATABASE_NAME
+
 
 @pytest.fixture
 def sqlite_db():
@@ -19,8 +20,8 @@ def sqlite_db():
     All model tests use a single model with a simple schema and drop/create
     that on every run. This fixture does the drop creating.
 
-    The database name is stored in the ``SQLITE_DATABASE_NAME`` constant in this
-    module.
+    The database name is stored in the ``SQLITE_DATABASE_NAME`` constant in
+    this module.
     """
     import sqlite3
 
