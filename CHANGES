@@ -3,8 +3,18 @@ Fleaker Changelog
 
 Here you can see all changes between each release of Fleaker.
 
+Version 0.3.1
+-------------
+
+Bug fix release, released on April 20th 2017.
+
+- Add basic Travis CI setup.
+- Fix failing test in the Python 2.7 environment.
+
 Version 0.3.0
 -------------
+
+Released on April 14th 2017, codename Schlenk.
 
 - A base model for Peewee that hooks into the application factory to use it's
   database.
