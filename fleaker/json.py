@@ -7,6 +7,8 @@ Custom JSON classes so more complex objects can be serialized by Flask. This
 will be your default JSON Encoder if you use the standard Fleaker app.
 """
 
+from __future__ import absolute_import
+
 import datetime
 import decimal
 import json
