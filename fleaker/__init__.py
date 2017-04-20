@@ -10,7 +10,7 @@ everything easier.
 :license: BSD, see LICENSE for more details.
 """
 
-__version__ = '0.3.0-dev'
+__version__ = '0.3.1'
 
 from .app import App
 from .component import Component
