@@ -75,12 +75,15 @@ class ArrowDateTimeField(DateTimeField):
 
         if (isinstance(value, (datetime.datetime, datetime.date,
                                string_types))):
-            value = arrow.get(value)
+            return arrow.get(value)
 
         return value
 
     def db_value(self, value):
         """Convert the Arrow instance to a datetime for saving in the db."""
+        if isinstance(value, string_types):
+            value = arrow.get(value)
+
         if isinstance(value, arrow.Arrow):
             value = value.datetime
 
