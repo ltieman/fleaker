@@ -3,6 +3,13 @@ Fleaker Changelog
 
 Here you can see all changes between each release of Fleaker.
 
+Version 0.3.3
+-------------
+
+Bug fix release, released on May 12th 2017.
+
+- Various ``setup.py`` fixes.
+
 Version 0.3.2
 -------------
 

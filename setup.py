@@ -66,11 +66,11 @@ def install():
     setup(
         name='fleaker',
         version=version,
-        download_url=,
+        download_url=download_url,
         description='Tools and extensions to make Flask development easier.',
         url='https://github.com/croscon/fleaker',
         author='Croscon Consulting',
-        author_email='hayden.chudy@croscon.com',
+        author_email='open.source@croscon.com',
         license='BSD',
         packages=[
             'fleaker',
@@ -94,14 +94,12 @@ def install():
             'blinker',
             'marshmallow',
             'marshmallow-jsonschema',
-            # @TODO Move these to extra_requires
-            'arrow',
-            'pendulum',
-            # @TODO: We gotta be missing some things
         ],
-        extra_requires={
+        extras_require={
             'peewee': ['peewee'],
             'sqlalchemy': ['SQLAlchemy', 'Flask-SQLAlchemy'],
+            'arrow': ['arrow'],
+            'pendulum': ['pendulum'],
         },
         classifiers=[
             'Development Status :: 2 - Pre-Alpha',
