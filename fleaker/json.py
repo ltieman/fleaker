@@ -7,17 +7,33 @@ Custom JSON classes so more complex objects can be serialized by Flask. This
 will be your default JSON Encoder if you use the standard Fleaker app.
 """
 
+from __future__ import absolute_import
+
 import datetime
 import decimal
+import json
 
-import arrow
+from collections import OrderedDict
+
 import flask
 
-# This may or may not be installed.
+from fleaker.constants import MISSING
+
+# These may or may not be installed.
+try:
+    import arrow
+except ImportError:
+    arrow = MISSING
+
+try:
+    import pendulum
+except ImportError:
+    pendulum = MISSING
+
 try:
     import phonenumbers
 except ImportError:
-    phonenumbers = None
+    phonenumbers = MISSING
 
 from ._compat import text_type
 from .base import BaseApplication
@@ -83,14 +99,14 @@ class FleakerJSONEncoder(flask.json.JSONEncoder):
                 phonenumbers.PhoneNumberFormat.E164
             )
 
-        elif isinstance(obj, arrow.Arrow):
+        elif pendulum and isinstance(obj, pendulum.Pendulum):
             return text_type(obj)
 
-        elif isinstance(obj, datetime.datetime):
-            return text_type(arrow.get(obj))
-
-        elif isinstance(obj, datetime.date):
+        elif arrow and isinstance(obj, arrow.Arrow):
             return text_type(obj)
+
+        elif isinstance(obj, (datetime.datetime, datetime.date)):
+            return obj.isoformat()
 
         try:
             return list(iter(obj))
@@ -98,6 +114,12 @@ class FleakerJSONEncoder(flask.json.JSONEncoder):
             pass
 
         return super(FleakerJSONEncoder, self).default(obj)
+
+    def encode(self, obj):
+        if isinstance(obj, OrderedDict):
+            return json.dumps(obj)
+
+        return super(FleakerJSONEncoder, self).encode(obj)
 
 
 class FleakerJSONApp(BaseApplication):
@@ -122,3 +144,4 @@ class FleakerJSONApp(BaseApplication):
         self.json_encoder = FleakerJSONEncoder
 
         self.json = flask.json
+        self.config.setdefault('JSON_SORT_KEYS', True)

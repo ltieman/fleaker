@@ -3,16 +3,57 @@ Fleaker Changelog
 
 Here you can see all changes between each release of Fleaker.
 
-Unreleased Version
-------------------
+Version 0.3.1
+-------------
 
-The rise of the documentation...
+Bug fix release, released on April 20th 2017.
+
+- Add basic Travis CI setup.
+- Fix failing test in the Python 2.7 environment.
+
+Version 0.3.0
+-------------
+
+Released on April 14th 2017, codename Schlenk.
+
+- A base model for Peewee that hooks into the application factory to use it's
+  database.
+- Datetime Peewee Fields for Arrow and Pendulum
+- A dumb JSON field for Peewee
+- A field signature mixin for enforcing unique constraints on nullable fields.
+- A mixin that allows for SQL `LIKE` searching on models.
+- Mixins that provide created, updated, and archived timestamps for all datetime
+  libraries that Fleaker supports
+- Add `bcrypt` as a module that must be installed if Peewee is selected (this
+  allows it to support the `PasswordField` out of the box.
+- Make Arrow, Pendulum, and Phonenumbers all optional installs
+- Add a bunch of docs
+
+Version 0.2.1
+-------------
+
+Reupload to fix download URL, released on March 31st 2017.
+
+Bug fixes:
+
+- Download URL is correct now.
+- Description is fixed.
+
+Version 0.2.0
+-------------
+
+Released on March 31st 2017, codename Erlenmeyer.
+
+The rise of the documentation and the opening of source...
 
 - Added Sphinx integration for generating the documentation. Right now, it's
   mostly focued around generating the API Documentation.
+- Fleaker is now open source!
 
 Version 0.1.4
 -------------
+
+Developer QoL Release, released on December 7th 2016.
 
 Make the ORM a tad easier to use... more work on this is coming soon!
 
@@ -22,6 +63,8 @@ Make the ORM a tad easier to use... more work on this is coming soon!
 
 Version 0.1.3
 -------------
+
+Bug fix release, released on December 6th 2016.
 
 ...More bug fixes for... Marshmallow... Think we got it this time!
 
@@ -33,7 +76,7 @@ Bug Fixes:
 Version 0.1.2
 -------------
 
-More bug fixes for Marshmallow.
+More bug fixes for Marshmallow, released on December 6th 2016.
 
 Bug fixes:
 
@@ -47,6 +90,8 @@ Bug fixes:
 
 Version 0.1.1
 -------------
+
+Bugfix release, released on December 3rd 2016.
 
 Bug fixes around Marshmallow.
 

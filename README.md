@@ -121,3 +121,53 @@ def create_app():
     app.proxy_fix(1)
     return app
 ```
+
+## Releases
+
+The release process is fully automated via the `scripts/make_release.py`
+script. All you need to have in order to run it is a `~/.pypirc` file with your
+proper credentials and two sections: `pypi` and `pypitest`. It should resemble:
+
+```cfg
+[distutils]
+index-servers=
+  pypi
+  pypitest
+
+[pypi]
+repository=https://pypi.python.org/pypi
+username=yourusername
+password=yourpassword
+
+[pypitest]
+repository=https://testpypi.python.org/pypi
+username=yourusername
+password=yourpassword
+```
+
+From there, the release process is as simple as creating the new entry in the
+`CHANGES` file with the appropriate version number as the header, the date it
+was released, and a summary of the changes. Like so:
+
+```
+Version 0.2.0
+-------------
+
+Released on March 31st 2017, codename Erlenmeyer.
+
+The rise of the documentation and the opening of source...
+
+- Added Sphinx integration for generating the documentation. Right now, it's
+  mostly focued around generating the API Documentation.
+- Fleaker is now open source!
+```
+
+The format of the date is very important. For most cases, just look at what's
+already done and follow suit.
+
+After running the script it will update version numbers, download URL's in
+`setup.py`, commit, create a tag, and publish to PyPI. When the script is done,
+it will leave one uncommitted change for the new `-dev` version. Commit that,
+and push it up along with all the new tags.
+
+Now go home and enjoy your new release of Fleaker!

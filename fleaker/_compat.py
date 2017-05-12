@@ -31,6 +31,11 @@ if PY2:
         if isinstance(x, unicode):
             return x.encode(charset, errors)
         raise TypeError('Expected bytes')
+
+    def exception_message(exc):
+        """Helper function to access an Exception's message."""
+        return exc.message
+
 else:
     text_type = str
     string_types = (str,)
@@ -48,3 +53,7 @@ else:
         if isinstance(x, str):
             return x.encode(charset, errors)
         raise TypeError('Expected bytes')
+
+    def exception_message(exc):
+        """Helper function to access and Exception's message."""
+        return exc.args[0]

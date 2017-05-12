@@ -4,6 +4,7 @@
 .ropeproject
 test_db.db
 docs/_build
+build/*
 
 # for pytest
 .cache/*

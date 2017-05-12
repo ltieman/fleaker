@@ -141,6 +141,48 @@ Marshmallow JSON Schema Support
 
 .. _json-encoding:
 
+Peewee Base Model
+-----------------
+
+.. automodule:: fleaker.peewee.model
+    :members:
+
+Peewee Mixins
+-------------
+
+.. automodule:: fleaker.peewee.mixins
+    :members:
+
+.. automodule:: fleaker.peewee.mixins.search
+    :members:
+
+.. automodule:: fleaker.peewee.mixins.field_signature
+    :members:
+
+.. automodule:: fleaker.peewee.mixins.time.base
+    :members:
+
+.. automodule:: fleaker.peewee.mixins.time.arrow
+    :members:
+
+.. automodule:: fleaker.peewee.mixins.time.pendulum
+    :members:
+
+Peewee Fields
+-------------
+
+.. automodule:: fleaker.peewee.fields
+    :members:
+
+.. automodule:: fleaker.peewee.fields.arrow
+    :members:
+
+.. automodule:: fleaker.peewee.fields.pendulum
+    :members:
+
+.. automodule:: fleaker.peewee.fields.json
+    :members:
+
 JSON Encoding
 -------------
 

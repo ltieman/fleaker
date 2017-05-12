@@ -4,17 +4,18 @@ fleaker.marshmallow.extension
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Fleaker Marshmallow module provides an extension that hooks in to the app
-to register Flask-Marshmallow_. While this extension isn't
-strictly needed for Marshmallow to work, it does provide some really useful
-fields, like being able to generate Flask URLs.
-
-.. _Flask-Marshmallow: https://flask-marshmallow.readthedocs.io
+to register Flask-Marshmallow_. While this extension isn't strictly needed for
+Marshmallow to work, it does provide some really useful fields, like being able
+to generate Flask URLs.
 
 Attributes:
     marsh (flask_marshmallow.Marshmallow): The initialized Flask Marshmallow
         extension. This will be a part of :class:`fleaker.marshmallow.Schema`
         so all extensions inheriting from it will have the Flask context
         inserted into them.
+
+.. _Flask-Marshmallow: https://flask-marshmallow.readthedocs.io
+
 """
 
 from flask_marshmallow import Marshmallow
@@ -41,7 +42,7 @@ class MarshmallowAwareApp(BaseApplication):
                 Flask Marshmallow upon.
 
         Kwargs:
-            **settings (dict): The settings passed to this method from the
+            settings (dict): The settings passed to this method from the
                 parent app.
 
         Returns:
