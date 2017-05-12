@@ -3,6 +3,16 @@ Fleaker Changelog
 
 Here you can see all changes between each release of Fleaker.
 
+Version 0.3.2
+-------------
+
+Bug fix release, released on May 12th 2017.
+
+- Add a event tracking Peewee mixin.
+- Add a custom pytest flask test client that mimics requests when it comes to
+  JSON data.
+- Fix Peewee module packing for this library.
+
 Version 0.3.1
 -------------
 
