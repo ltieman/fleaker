@@ -24,7 +24,7 @@ def peewee_app():
 
     app = App.create_app(__name__, orm_backend='peewee')
     app.configure({
-        'DATABASE': 'sqlite:///' + 'test_db.db',
+        'DATABASE': 'sqlite:///' + SQLITE_DATABASE_NAME,
         'SECRET_KEY': uuid.uuid4().hex,
     })
 

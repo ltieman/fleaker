@@ -69,7 +69,8 @@ class PendulumDateTimeField(DateTimeField):
         """Return the value in the database as an Pendulum object.
 
         Returns:
-            pendulum.Pendulum: An instance of Pendulum with the field filled in.
+            pendulum.Pendulum:
+                An instance of Pendulum with the field filled in.
         """
         value = super(PendulumDateTimeField, self).python_value(value)
 

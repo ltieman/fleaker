@@ -54,6 +54,9 @@ class JSONField(TextField):
     @TODO Get this working for searching using JSON searching.
 
     Keyword Args:
+        This field takes all the same arguments as :class:`peewee.TextField`,
+        as well as:
+
         object_hook (dict, optional):
             This will be passed to :func:`json.loads` keyword arguments with
             the same name and will effect what dictionary like object the value
@@ -65,6 +68,10 @@ class JSONField(TextField):
             value is ignored.
         ordered (bool, optional):
             Will return the dict as a :class:`collections.OrderedDict` when
+            loaded from the database.
+        immutable (bool, optional):
+            Will return the dict as
+            a :class:`werkzeug.datastructures.ImmutableDict` when the value is
             loaded from the database. This arg will override the
             ``object_pairs_hook`` when set to ``True``.
         immutable (bool, optional):

@@ -159,6 +159,9 @@ Peewee Mixins
 .. automodule:: fleaker.peewee.mixins.field_signature
     :members:
 
+.. automodule:: fleaker.peewee.mixins.event
+    :members:
+
 .. automodule:: fleaker.peewee.mixins.time.base
     :members:
 

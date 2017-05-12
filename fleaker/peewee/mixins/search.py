@@ -73,10 +73,12 @@ Example:
 from functools import reduce
 
 from playhouse.shortcuts import case
-from peewee import Model, operator
+from peewee import operator
+
+from fleaker.orm import PeeweeModel
 
 
-class SearchMixin(Model):
+class SearchMixin(PeeweeModel):
     """Mixin that provides generic SQL ``LIKE`` searching across columns.
 
     Attributes:

@@ -25,7 +25,7 @@ from .fields import JSONField
 from .model import Model
 from .mixins import (
     FieldSignatureMixin, ArchivedMixin, CreatedMixin, CreatedModifiedMixin,
-    SearchMixin
+    SearchMixin, EventMixin, EventStorageMixin
 )
 
 try:
