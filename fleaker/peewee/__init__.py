@@ -21,27 +21,11 @@ seem like it's going to get any better. So why not use ``arrow`` or
 easy to use as well!
 """
 
-from .fields import JSONField
+from .fields import ArrowDateTimeField, JSONField, PendulumDateTimeField
 from .model import Model
 from .mixins import (
     FieldSignatureMixin, ArchivedMixin, CreatedMixin, CreatedModifiedMixin,
-    SearchMixin, EventMixin, EventStorageMixin
+    SearchMixin, EventMixin, EventStorageMixin,  ArrowArchivedMixin,
+    ArrowCreatedMixin, ArrowCreatedModifiedMixin, PendulumArchivedMixin,
+    PendulumCreatedMixin, PendulumCreatedModifiedMixin
 )
-
-try:
-    import arrow
-except ImportError:
-    pass
-else:
-    from .fields import ArrowDateTimeField
-    from .mixins import (ArrowArchivedMixin, ArrowCreatedMixin,
-                         ArrowCreatedModifiedMixin)
-
-try:
-    import pendulum
-except ImportError:
-    pass
-else:
-    from .fields import PendulumDateTimeField
-    from .mixins import (PendulumArchivedMixin, PendulumCreatedMixin,
-                         PendulumCreatedModifiedMixin)

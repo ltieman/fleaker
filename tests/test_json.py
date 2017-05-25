@@ -9,19 +9,18 @@ Unit tests for Fleaker.json module.
 import datetime
 import decimal
 
+import arrow
+import pendulum
+import phonenumbers
 import pytest
 
 from fleaker._compat import text_type
 
 
-def test_json_arrow(app):
-    """Ensure that Arrow object serialize properly."""
-    arrow = pytest.importorskip('arrow')
-    data = {
-        'now': arrow.utcnow(),
-        'past': arrow.utcnow().replace(years=-50),
-        'future': arrow.utcnow().replace(years=+50),
-    }
+@pytest.mark.parametrize('dt_mod', (pendulum, arrow))
+def test_json_datetime_libs(app, dt_mod):
+    """Ensure that datetime-like objects serialize properly."""
+    data = {'now': dt_mod.utcnow()}
     serialized = app.json.loads(app.json.dumps(data))
 
     for key in data:
@@ -56,7 +55,6 @@ def test_json_time(app, now):
 
 def test_json_phonenumber(app):
     """Ensure that phonenumbers.PhoneNumber objects serialize properly."""
-    phonenumbers = pytest.importorskip('phonenumbers')
     data = {'tel': phonenumbers.parse("+13308286147")}
     serialized = app.json.loads(app.json.dumps(data))
 

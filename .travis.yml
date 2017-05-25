@@ -2,39 +2,11 @@ sudo: false
 language: python
 python:
   - "2.7"
-env:
-  matrix:
-    - TOXENV=py27
-    - TOXENV=py33
-    - TOXENV=py34
-    - TOXENV=py35
-    - TOXENV=py36
-    - TOXENV=py27-peewee
-    - TOXENV=py27-peewee-phonenumbers
-    - TOXENV=py27-peewee-arrow
-    - TOXENV=py27-peewee-pendulum
-    - TOXENV=py27-peewee-pendulum-phonenumbers
-    - TOXENV=py33-peewee
-    - TOXENV=py33-peewee-phonenumbers
-    - TOXENV=py33-peewee-arrow
-    - TOXENV=py33-peewee-pendulum
-    - TOXENV=py33-peewee-pendulum-phonenumbers
-    - TOXENV=py34-peewee
-    - TOXENV=py34-peewee-phonenumbers
-    - TOXENV=py34-peewee-arrow
-    - TOXENV=py34-peewee-pendulum
-    - TOXENV=py34-peewee-pendulum-phonenumbers
-    - TOXENV=py35-peewee
-    - TOXENV=py35-peewee-phonenumbers
-    - TOXENV=py35-peewee-arrow
-    - TOXENV=py35-peewee-pendulum
-    - TOXENV=py35-peewee-pendulum-phonenumbers
-    - TOXENV=py36-peewee
-    - TOXENV=py36-peewee-phonenumbers
-    - TOXENV=py36-peewee-arrow
-    - TOXENV=py36-peewee-pendulum
-    - TOXENV=py36-peewee-pendulum-phonenumbers
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.6"
 install:
-  - pip install tox
+  - pip install tox-travis
 script:
-  - tox -e $TOXENV
+  - tox

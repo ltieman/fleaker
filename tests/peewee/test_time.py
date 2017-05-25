@@ -2,23 +2,24 @@
 
 import datetime
 
-from pytest import importorskip
-
-peewee = importorskip('peewee')
-
+import arrow
+import peewee
+import pendulum
 import pytest
 
+from fleaker.peewee.fields import ArrowDateTimeField, PendulumDateTimeField
 from fleaker.peewee.mixins import (
-    ArchivedMixin, CreatedMixin, CreatedModifiedMixin
+    ArchivedMixin, CreatedMixin, CreatedModifiedMixin, ArrowArchivedMixin,
+    ArrowCreatedMixin, ArrowCreatedModifiedMixin, PendulumArchivedMixin,
+    PendulumCreatedMixin, PendulumCreatedModifiedMixin
+
 )
 
 
 @pytest.mark.parametrize('Mixin,dt', (
     (CreatedMixin, datetime.datetime),
-    (importorskip('fleaker.peewee.mixins.time.arrow').ArrowCreatedMixin,
-     importorskip('arrow').Arrow),
-    (importorskip('fleaker.peewee.mixins.time.pendulum').PendulumCreatedMixin,
-     importorskip('pendulum').Pendulum),
+    (ArrowCreatedMixin, arrow.Arrow),
+    (PendulumCreatedMixin, pendulum.Pendulum),
 ))
 def test_created_time_mixins(database, Mixin, dt):
     """Ensure that created time mixins work as expected."""
@@ -37,12 +38,8 @@ def test_created_time_mixins(database, Mixin, dt):
 
 @pytest.mark.parametrize('Mixin,dt', (
     (CreatedModifiedMixin, datetime.datetime),
-    (importorskip('fleaker.peewee.mixins.time.'
-                  'arrow').ArrowCreatedModifiedMixin,
-     importorskip('arrow').Arrow),
-    (importorskip('fleaker.peewee.mixins.time.'
-                  'pendulum').PendulumCreatedModifiedMixin,
-     importorskip('pendulum').Pendulum),
+    (ArrowCreatedModifiedMixin, arrow.Arrow),
+    (PendulumCreatedModifiedMixin, pendulum.Pendulum),
 ))
 def test_created_modified_time_mixins(database, Mixin, dt):
     """Ensure that created and modified time mixins work as expected."""
@@ -69,10 +66,8 @@ def test_created_modified_time_mixins(database, Mixin, dt):
 
 @pytest.mark.parametrize('Mixin,dt', (
     (ArchivedMixin, datetime.datetime),
-    (importorskip('fleaker.peewee.mixins.time.arrow').ArrowArchivedMixin,
-     importorskip('arrow').Arrow),
-    (importorskip('fleaker.peewee.mixins.time.pendulum').PendulumArchivedMixin,
-     importorskip('pendulum').Pendulum),
+    (ArrowArchivedMixin, arrow.Arrow),
+    (PendulumArchivedMixin, pendulum.Pendulum),
 ))
 def test_archived_time_mixins(database, Mixin, dt):
     """Ensure that archived time mixins work as expected."""
@@ -118,10 +113,8 @@ def test_archived_time_mixins(database, Mixin, dt):
 
 @pytest.mark.parametrize('Mixin,dt', (
     (CreatedMixin, datetime.datetime),
-    (importorskip('fleaker.peewee.mixins.time.arrow').ArrowCreatedMixin,
-     importorskip('arrow').Arrow),
-    (importorskip('fleaker.peewee.mixins.time.pendulum').PendulumCreatedMixin,
-     importorskip('pendulum').Pendulum),
+    (ArrowCreatedMixin, arrow.Arrow),
+    (PendulumCreatedMixin, pendulum.Pendulum),
 ))
 def test_timestamp_returned_properly(database, Mixin, dt):
     """Ensure that all time mixins return the right value from the DB."""
@@ -140,10 +133,8 @@ def test_timestamp_returned_properly(database, Mixin, dt):
 
 
 @pytest.mark.parametrize('dt,Field', (
-    (importorskip('arrow').Arrow,
-     importorskip('fleaker.peewee.fields').ArrowDateTimeField),
-    (importorskip('pendulum').Pendulum,
-     importorskip('fleaker.peewee.fields').PendulumDateTimeField)
+    (arrow.Arrow, ArrowDateTimeField),
+    (pendulum.Pendulum, PendulumDateTimeField)
 ))
 def test_time_python_value(database, dt, Field):
     """Ensure that the Python value is correctly handled for time fields."""

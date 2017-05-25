@@ -1,8 +1,7 @@
 """Unit tests for the SearchMixin."""
 
+import peewee
 import pytest
-
-peewee = pytest.importorskip('peewee')
 
 from fleaker.peewee import SearchMixin
 

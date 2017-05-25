@@ -1,9 +1,8 @@
 # ~*~ coding: utf-8 ~*~
 """Unit tests for the FieldSignatureMixin."""
 
+import peewee
 import pytest
-
-peewee = pytest.importorskip('peewee')
 
 from fleaker.peewee import ArchivedMixin, FieldSignatureMixin
 

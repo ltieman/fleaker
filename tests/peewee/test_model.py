@@ -1,8 +1,7 @@
 """Unit tests for the base Peewee Model."""
 
+import peewee
 import pytest
-
-peewee = pytest.importorskip('peewee')
 
 from playhouse.fields import PasswordField
 from playhouse.signals import post_save, pre_save

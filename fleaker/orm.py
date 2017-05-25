@@ -27,6 +27,8 @@ Attributes:
 :license: BSD, see LICENSE for more details.
 """
 
+# @TODO Nuke the sqlalchemy bits of this from orbit.
+
 from __future__ import absolute_import
 
 from functools import partial

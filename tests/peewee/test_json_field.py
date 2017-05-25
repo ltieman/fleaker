@@ -3,8 +3,8 @@
 
 from collections import OrderedDict
 
+import peewee
 import pytest
-peewee = pytest.importorskip('peewee')
 
 from werkzeug.datastructures import ImmutableDict
 

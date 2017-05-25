@@ -15,25 +15,10 @@ import json
 
 from collections import OrderedDict
 
+import arrow
+import pendulum
+import phonenumbers
 import flask
-
-from fleaker.constants import MISSING
-
-# These may or may not be installed.
-try:
-    import arrow
-except ImportError:
-    arrow = MISSING
-
-try:
-    import pendulum
-except ImportError:
-    pendulum = MISSING
-
-try:
-    import phonenumbers
-except ImportError:
-    phonenumbers = MISSING
 
 from ._compat import text_type
 from .base import BaseApplication
@@ -93,16 +78,16 @@ class FleakerJSONEncoder(flask.json.JSONEncoder):
                     if '.' in str_digit
                     else str_digit)
 
-        elif phonenumbers and isinstance(obj, phonenumbers.PhoneNumber):
+        elif isinstance(obj, phonenumbers.PhoneNumber):
             return phonenumbers.format_number(
                 obj,
                 phonenumbers.PhoneNumberFormat.E164
             )
 
-        elif pendulum and isinstance(obj, pendulum.Pendulum):
+        elif isinstance(obj, pendulum.Pendulum):
             return text_type(obj)
 
-        elif arrow and isinstance(obj, arrow.Arrow):
+        elif isinstance(obj, arrow.Arrow):
             return text_type(obj)
 
         elif isinstance(obj, (datetime.datetime, datetime.date)):

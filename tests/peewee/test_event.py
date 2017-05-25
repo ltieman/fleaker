@@ -1,8 +1,7 @@
 """Unit tests for the Event mixin."""
 
+import peewee
 import pytest
-
-peewee = pytest.importorskip('peewee')  # noqa
 
 from flask_login import UserMixin, current_user, login_user
 
