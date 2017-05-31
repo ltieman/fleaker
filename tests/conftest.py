@@ -56,4 +56,7 @@ def app():
     Returns:
         fleaker.App: An instantiated Flask application.
     """
-    return App.create_app(__name__)
+    app = App.create_app(__name__)
+    app.configure({})
+
+    return app

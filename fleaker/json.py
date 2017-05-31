@@ -127,6 +127,5 @@ class FleakerJSONApp(BaseApplication):
 
         # @TODO (json): Should be class level to make this easier to override.
         self.json_encoder = FleakerJSONEncoder
-
         self.json = flask.json
         self.config.setdefault('JSON_SORT_KEYS', True)

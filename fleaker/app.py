@@ -13,13 +13,14 @@
 from .base import BaseApplication
 from .config import MultiStageConfigurableApp
 from .json import FleakerJSONApp
+from .logging import LoggingAwareApp
 from .marshmallow import MarshmallowAwareApp
 from .orm import ORMAwareApp
 from .test_client import FlaskClientAwareApp
 
 
 class App(MultiStageConfigurableApp, MarshmallowAwareApp, FleakerJSONApp,
-          ORMAwareApp, FlaskClientAwareApp, BaseApplication):
+          ORMAwareApp, FlaskClientAwareApp, LoggingAwareApp, BaseApplication):
     """The :class:`App` class is the primary entrypoint for using Fleaker and
     is a simple WSGI Application. In it's simplest form, you can think of
     :class:`App` as roughly equivalent to :class:`flask.Flask`. On top of

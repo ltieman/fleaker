@@ -39,6 +39,11 @@ def _create_app(register_error_handlers=True):
     app.config['SECRET_KEY'] = 'ITSASECRET'
     app.config['SERVER_NAME'] = SERVER_NAME
 
+    # This is needed to make these tests pass. As of v0.4.0, we register
+    # a global 500 errorhandler so that it can be logged. These tests were
+    # written by a nut job :)
+    app.error_handlers = {}
+
     @app.route('/app_exc')
     def app_exception():
         """Raise an AppException with some custom parameters."""
@@ -266,7 +271,7 @@ def test_exception_handler_auto_rollback():
 def test_exception_handler_registration(exc_type):
     """Ensure we can easily register the exception handler."""
     app = _create_app(register_error_handlers=False)
-    assert app.error_handlers == {}
+    assert not app.error_handlers.keys()
 
     exc_type.register_errorhandler(app)
     assert app.error_handlers[None][exc_type] == exc_type.errorhandler_callback
@@ -365,7 +370,7 @@ def test_exception_error_handler_callback():
     app = _create_app(register_error_handlers=False)
 
     class ErrorPageException(AppException):
-        """Implementss a small error page for testing."""
+        """Implements a small error page for testing."""
 
         def error_page(self):
             return self.message
