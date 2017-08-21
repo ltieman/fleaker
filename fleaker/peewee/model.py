@@ -157,39 +157,6 @@ class Model(SignalModel):
 
         return query
 
-    def save(self, *args, **kwargs):
-        """Save the instance's data.
-
-        This method will also allow for modification of
-        a :py:class:`peewee.IntegrityError`, if it is raised, to have
-        a friendlier error message that can be set by the ``Meta`` class's
-        ``integrity_error_msg`` variable.
-        """
-        try:
-            super(Model, self).save(*args, **kwargs)
-        except peewee.IntegrityError as exc:
-            # Set the exceptions model and change the message to something
-            # friendly, if possible.
-            exc.model = self.__class__
-
-            # Create the pretty message
-            message = getattr(
-                self._meta,
-                'integrity_error_msg',
-                exception_message(exc)
-            ).format(**self._data)
-
-            # Cache the original message
-            exc.original_message = exception_message(exc)
-
-            # This is the dumbest PY3 change.
-            if PY2:
-                exc.message = message
-            else:
-                exc.args = (message,)
-
-            raise exc
-
     def update_instance(self, data):
         """Update a single record by id with the provided data.
 

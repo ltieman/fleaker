@@ -19,9 +19,6 @@ def user_model(database):
         password = PasswordField(null=False, iterations=4)
         active = peewee.BooleanField(null=False, default=True)
 
-        class Meta:
-            integrity_error_msg = "User with email {email} already exists."
-
         @classmethod
         def base_query(cls):
             # Only query for active Users
@@ -67,17 +64,6 @@ def test_create_model(user_model):
     assert queried_user.password != password
     assert queried_user.password.check_password('password')
 
-    # Try and create a User with the same email and make sure the exception has
-    # the custom data added to it.
-    with pytest.raises(peewee.IntegrityError) as ctx:
-        user_model(email=email, password=password).save()
-
-    assert (exception_message(ctx.value) ==
-            "User with email john.doe@example.com already exists.")
-    assert getattr(ctx.value, 'original_message', False), "Message wasn't set."
-    assert (exception_message(ctx.value) != ctx.value.original_message)
-    assert ctx.value.model == user_model
-
 
 def test_update_model(user_model):
     """Ensure that a Model instance can be updated sanely."""
@@ -112,8 +98,8 @@ def test_get_model(user_model):
     active_user.save()
 
     assert active_user == user_model.get_by_id(active_user.id)
-    assert (user_model.get_by_id(active_user.id, execute=False),
-            peewee.SelectQuery)
+    assert isinstance(user_model.get_by_id(active_user.id, execute=False),
+                      peewee.SelectQuery)
 
     # This user will not be fetchable by ID because of the base_query
     inactive_user = user_model(
