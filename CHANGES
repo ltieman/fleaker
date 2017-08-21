@@ -3,6 +3,13 @@ Fleaker Changelog
 
 Here you can see all changes between each release of Fleaker.
 
+Version 0.4.1
+-------------
+
+Bug fix release, released on August 21st 2017.
+
+- Removes the custom save function on the base model.
+
 Version 0.4.0
 -------------
 
