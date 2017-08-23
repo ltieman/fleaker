@@ -156,7 +156,10 @@ class Component(object):
             """Remove the context proxy that points to a specific context and
             restore the original context, if there was one.
             """
-            del _CONTEXT_LOCALS.context
+            try:
+                del _CONTEXT_LOCALS.context
+            except AttributeError:
+                pass
 
             if original_context is not _CONTEXT_MISSING:
                 setattr(_CONTEXT_LOCALS, key, original_context)
