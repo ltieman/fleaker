@@ -3,6 +3,13 @@ Fleaker Changelog
 
 Here you can see all changes between each release of Fleaker.
 
+Version 0.4.2
+--------------
+
+Bug fix release, released on August 22st 2017.
+
+- Fixes issue where context being popped off of a component caused an error.
+
 Version 0.4.1
 -------------
 
