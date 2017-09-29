@@ -3,6 +3,15 @@ Fleaker Changelog
 
 Here you can see all changes between each release of Fleaker.
 
+Version 0.4.3
+-------------
+
+Bug fix release, released on September 29th 2017.
+
+- Fixes issue where ``flask.json.dumps`` would error out when a nested
+  dictionary would have a decimal in it.
+- Switch the JSON encoder to simplejson.
+
 Version 0.4.2
 --------------
 
