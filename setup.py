@@ -98,6 +98,7 @@ def install():
             'peewee',
             'pendulum',
             'phonenumbers',
+            'simplejson',
         ],
         classifiers=[
             'Development Status :: 2 - Pre-Alpha',

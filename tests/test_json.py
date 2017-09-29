@@ -9,6 +9,8 @@ Unit tests for Fleaker.json module.
 import datetime
 import decimal
 
+from collections import OrderedDict
+
 import arrow
 import pendulum
 import phonenumbers
@@ -93,3 +95,14 @@ def test_terrible_value(app):
     """Ensure that the custom JSON encoder errors out on some values."""
     with pytest.raises(TypeError):
         app.json.dumps({'obj': object})
+
+
+def test_dump_nested_values(app):
+    """Ensure that nested decimals can be dumped from OrderedDict."""
+    data = OrderedDict([
+        ('key', OrderedDict([
+            ('nested_decimal', decimal.Decimal('1.12')),
+        ])),
+    ])
+
+    assert app.json.dumps(data)

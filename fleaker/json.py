@@ -11,20 +11,18 @@ from __future__ import absolute_import
 
 import datetime
 import decimal
-import json
-
-from collections import OrderedDict
 
 import arrow
+import flask
 import pendulum
 import phonenumbers
-import flask
+import simplejson
 
 from ._compat import text_type
 from .base import BaseApplication
 
 
-class FleakerJSONEncoder(flask.json.JSONEncoder):
+class FleakerJSONEncoder(simplejson.JSONEncoder):
     """Custom JSON encoder that will serialize more complex datatypes.
 
     This class adds support for the following datatypes:
@@ -56,6 +54,11 @@ class FleakerJSONEncoder(flask.json.JSONEncoder):
     """
 
     # @TODO (json, doc): Fix links in above; intersphinx to libs.
+
+    def __init__(self, *args, **kwargs):
+        super(FleakerJSONEncoder, self).__init__(*args, **kwargs)
+
+        self.use_decimal = False
 
     def default(self, obj):
         """Encode individual objects into their JSON representation.
@@ -99,12 +102,6 @@ class FleakerJSONEncoder(flask.json.JSONEncoder):
             pass
 
         return super(FleakerJSONEncoder, self).default(obj)
-
-    def encode(self, obj):
-        if isinstance(obj, OrderedDict):
-            return json.dumps(obj)
-
-        return super(FleakerJSONEncoder, self).encode(obj)
 
 
 class FleakerJSONApp(BaseApplication):
