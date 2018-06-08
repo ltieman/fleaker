@@ -125,7 +125,7 @@ class BaseApplication(Flask):
         kwargs = deepcopy(kwargs)
 
         if not cls._flask_init_argspec_cache:
-            cls._flask_init_argspec_cache = inspect.getfullargspec(Flask.__init__)
+            cls._flask_init_argspec_cache = inspect.getargspec(Flask.__init__)
 
         return {key: val for key, val in iteritems(kwargs)
                 if key in cls._flask_init_argspec_cache.args}
