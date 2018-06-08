@@ -39,10 +39,10 @@ def _create_app(register_error_handlers=True):
     app.config['SECRET_KEY'] = 'ITSASECRET'
     app.config['SERVER_NAME'] = SERVER_NAME
 
-    # This is needed to make these tests pass. As of v0.4.0, we register
-    # a global 500 errorhandler so that it can be logged. These tests were
-    # written by a nut job :)
-    app.error_handlers = {}
+    # # This is needed to make these tests pass. As of v0.4.0, we register
+    # # a global 500 errorhandler so that it can be logged. These tests were
+    # # written by a nut job :)
+    # app.error_handlers = {}
 
     @app.route('/app_exc')
     def app_exception():
@@ -78,11 +78,11 @@ def _create_app(register_error_handlers=True):
 
     if register_error_handlers:
         # this is more old-Flask friendly than using ``add_errorhandler``.
-        app.errorhandler(exceptions.AppException)(
+        app.register_error_handler(exceptions.AppException,
             exceptions.AppException.errorhandler_callback)
-        app.errorhandler(exceptions.FleakerException)(
+        app.register_error_handler(exceptions.FleakerException,
             exceptions.FleakerException.errorhandler_callback)
-        app.errorhandler(exceptions.FleakerBaseException)(
+        app.register_error_handler(exceptions.FleakerBaseException,
             exceptions.FleakerBaseException.errorhandler_callback)
 
     return app
@@ -271,10 +271,10 @@ def test_exception_handler_auto_rollback():
 def test_exception_handler_registration(exc_type):
     """Ensure we can easily register the exception handler."""
     app = _create_app(register_error_handlers=False)
-    assert not app.error_handlers.keys()
+    assert not app.error_handler_spec.keys()
 
-    exc_type.register_errorhandler(app)
-    assert app.error_handlers[None][exc_type] == exc_type.errorhandler_callback
+    app.register_error_handler(exc_type, exc_type.errorhandler_callback)
+    assert app.error_handler_spec[None][None][exc_type] == exc_type.errorhandler_callback
 
 
 def test_exception_handler_overridden():
@@ -338,7 +338,7 @@ def test_exception_auto_handler_registration():
 
     # error handlers should be registered by default
     expected_handler = AppException.errorhandler_callback
-    assert app.error_handlers[None][AppException] == expected_handler
+    assert app.error_handler_spec[None][None][AppException] == expected_handler
 
     msg = 'foo'
     level = 'danger'
@@ -362,7 +362,7 @@ def test_exception_auto_handler_explicit_registration():
     """
     app = ErrorAwareApp.create_app('tests', register_errorhandler=False)
 
-    assert app.error_handlers == {}
+    assert app.error_handler_spec == {}
 
 
 def test_exception_error_handler_callback():

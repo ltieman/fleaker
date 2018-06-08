@@ -33,7 +33,7 @@ def test_generate_json_schema(schema):
     schema = UserSchema()
 
     for key, field in schema.fields.items():
-        assert (key in json_schema['required']) is field.required
+        assert (key in json_schema['definitions'][schema.__class__.__name__]['required']) is field.required
 
 
 @pytest.mark.parametrize('schema,folder,file_pointer', (
@@ -88,4 +88,4 @@ def test_fleaker_field_output(field_module, field_class):
     json_schema = FleakerJSONSchema.generate_json_schema(schema)
 
     assert (schema.fields['test_field']._jsonschema_type_mapping() ==
-            json_schema['properties']['test_field'])
+            json_schema['definitions'][schema.__class__.__name__]['properties']['test_field'])

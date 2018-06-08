@@ -246,7 +246,6 @@ class Event(EventStorageMixin):
     created_by = peewee.ForeignKeyField(User, null=True, related_name='events')
 
     class Meta:
-        order_by = ('-id',)
         event_codes = (
             'FOLDER_CREATED',
             'FOLDER_DELETED',
@@ -317,9 +316,9 @@ def test_folder_update_event(logged_in_user):
     # Two events, one for the creation, another for the movement.
     assert etc_folder.events.count() == 2
 
-    # Since the IDs are in descending order, I can guarantee that the movement
-    # event is first.
-    event = etc_folder.events.get()
+    # `order_by` no longer supported in meta
+    event_model = etc_folder.events.model
+    event = etc_folder.events.order_by(event_model.id.desc()).get()
 
     assert event.code == 'FOLDER_RENAMED'
     assert event.folder == etc_folder

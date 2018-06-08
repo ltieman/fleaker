@@ -5,7 +5,7 @@ fleaker.peewee.mixins.time.pendulum
 
 Module that implements mixins that provide timestamp accounting for models. The
 only difference between this model and class:`fleaker.peewee.mixins.time.base`
-is that the timestamps are class:`pendulum.Pendulum` objects.
+is that the timestamps are class:`pendulum.datetime.DateTime` objects.
 
 Example:
     To use these mixins, add the class to the model's inheritance chain.
@@ -63,16 +63,24 @@ from fleaker.peewee.fields import PendulumDateTimeField
 from .base import CreatedMixin, CreatedModifiedMixin, ArchivedMixin
 
 
+def pendulum_utcnow():
+    """
+    Helper method to return pendulum.now('UTC') without initializing
+    """
+    return pendulum.now('UTC')
+
+
 class PendulumCreatedMixin(CreatedMixin):
     """Peewee mixin that provides record keeping for when a record was created.
 
     This mixin will provide the dates it provides with
-    class:`pendulum.Pendulum` instead of ``datetime.datetime``.
+    class:`pendulum.datetime.DateTime` instead of ``datetime.datetime``.
 
     Attributes:
-        created (pendulum.Pendulum): The time at which this record was created.
+        created (pendulum.datetime.DateTime): The time at which this record
+            was created.
     """
-    created = PendulumDateTimeField(null=False, default=pendulum.utcnow)
+    created = PendulumDateTimeField(null=False, default=pendulum_utcnow)
 
     class Meta(object):
         datetime = pendulum
@@ -83,13 +91,14 @@ class PendulumCreatedModifiedMixin(PendulumCreatedMixin, CreatedModifiedMixin):
     and modified.
 
     This mixin will provide the dates it provides with
-    class:`pendulum.Pendulum` instead of ``datetime.datetime``.
+    class:`pendulum.datetime.DateTime` instead of ``datetime.datetime``.
 
     Attributes:
-        created (pendulum.Pendulum): The time at which this record was created.
-        modified (pendulum.Pendulum): The time at which this record was
-            modified. This will default to null on creation and will only be
-            set after the first edit.
+        created (pendulum.datetime.DateTime): The time at which this record
+            was created.
+        modified (pendulum.datetime.DateTime): The time at which this record
+            was modified. This will default to null on creation and will only
+            be set after the first edit.
     """
     modified = PendulumDateTimeField(null=True)
 
@@ -102,15 +111,16 @@ class PendulumArchivedMixin(PendulumCreatedModifiedMixin, ArchivedMixin):
     action but you don't actually want to delete the record.
 
     This mixin will provide the dates it provides with
-    class:`pendulum.Pendulum` instead of ``datetime.datetime``.
+    class:`pendulum.datetime.DateTime` instead of ``datetime.datetime``.
 
     Attributes:
-        created (pendulum.Pendulum): The time at which this record was created.
-        modified (pendulum.Pendulum|None): The time at which this record was
-            modified. This will default to null on creation and will only be
-            set after the first edit.
-        archived (pendulum.Pendulum|None): The time at which this record was
-            archived. This will default to ``None``.
+        created (pendulum.datetime.DateTime): The time at which this record
+            was created.
+        modified (pendulum.datetime.DateTime|None): The time at which this
+            record was modified. This will default to null on creation and
+            will only be set after the first edit.
+        archived (pendulum.datetime.DateTime|None): The time at which this
+            record was archived. This will default to ``None``.
         is_archived (bool | peewee.Clause): This is a hybrid property that
             allows for querying on archived records like you would on any other
             boolean field.

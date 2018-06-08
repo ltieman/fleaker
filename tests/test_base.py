@@ -34,9 +34,8 @@ def test_base_whitelist_kwargs():
 
     new_kwargs = BaseApplication._whitelist_standard_flask_kwargs(kwargs)
 
-    expected_keys = ('static_path', 'static_url_path', 'root_path',
-                     'template_folder',)
-    bad_keys = ('bad', 'orm_backend')
+    expected_keys = ('static_url_path', 'root_path', 'template_folder',)
+    bad_keys = ('static_path', 'bad', 'orm_backend')
 
     for key in expected_keys:
         assert key in new_kwargs

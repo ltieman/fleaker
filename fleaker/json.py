@@ -17,6 +17,7 @@ import flask
 import pendulum
 import phonenumbers
 import simplejson
+from pendulum.datetime import DateTime
 
 from ._compat import text_type
 from .base import BaseApplication
@@ -87,7 +88,7 @@ class FleakerJSONEncoder(simplejson.JSONEncoder):
                 phonenumbers.PhoneNumberFormat.E164
             )
 
-        elif isinstance(obj, pendulum.Pendulum):
+        elif isinstance(obj, DateTime):
             return text_type(obj)
 
         elif isinstance(obj, arrow.Arrow):

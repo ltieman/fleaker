@@ -22,7 +22,10 @@ from fleaker._compat import text_type
 @pytest.mark.parametrize('dt_mod', (pendulum, arrow))
 def test_json_datetime_libs(app, dt_mod):
     """Ensure that datetime-like objects serialize properly."""
-    data = {'now': dt_mod.utcnow()}
+    if hasattr(dt_mod, 'utcnow'):
+        data = {'now': dt_mod.utcnow()}
+    elif hasattr(dt_mod, 'now'):
+        data = {'now': dt_mod.now('UTC')}
     serialized = app.json.loads(app.json.dumps(data))
 
     for key in data:

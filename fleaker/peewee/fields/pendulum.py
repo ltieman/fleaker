@@ -3,8 +3,8 @@
 fleaker.peewee.fields.pendulum
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Custom Peewee field that allows for datetimes to be :class:`pendulum.Pendulum`
-objects without any additional conversion.
+Custom Peewee field that allows for datetimes to be
+:class:`pendulum.datetime.DateTime` objects without any additional conversion.
 
 Example:
     This field can be used like any other Peewee field. All you need to do is
@@ -21,25 +21,25 @@ Example:
             body = peewee.TextField()
             # This field can accept all the arguments that peewee.DateTimeField
             # can, which means you can set the default value to a callable.
-            created = PendulumDateTimeField(default=pendulum.utcnow)
+            created = PendulumDateTimeField(default=pendulum.now)
             occured = PendulumDateTimeField()
 
         event = Event(
-            # Field can be set with an instance of pendulum.Pendulum
-            occured=pendulum.utcnow(),
+            # Field can be set with an instance of pendulum.datetime.DateTime
+            occured=pendulum.now('UTC'),
             body="Something important happened!"
         )
 
-        assert isinstance(event.occured, pendulum.Pendulum)
-        assert isinstance(event.created, pendulum.Pendulum)
+        assert isinstance(event.occured, pendulum.datetime.DateTime)
+        assert isinstance(event.created, pendulum.datetime.DateTime)
 
         # This field can also be set with strings and dates
-        event.created = pendulum.utcnow().date()
+        event.created = pendulum.now('UTC').date()
         event.occured = '2016-12-13T02:09:48.075736+00:00'
         event.save()
 
-        assert isinstance(event.occured, pendulum.Pendulum)
-        assert isinstance(event.created, pendulum.Pendulum)
+        assert isinstance(event.occured, pendulum.datetime.DateTime)
+        assert isinstance(event.created, pendulum.datetime.DateTime)
 
 
 .. _Pendulum: https://pendulum.eustace.io/
@@ -50,6 +50,7 @@ from __future__ import absolute_import
 import datetime
 
 import pendulum
+from pendulum.datetime import DateTime
 
 from peewee import DateTimeField
 
@@ -69,7 +70,7 @@ class PendulumDateTimeField(DateTimeField):
         """Return the value in the database as an Pendulum object.
 
         Returns:
-            pendulum.Pendulum:
+            pendulum.datetime.DateTime:
                 An instance of Pendulum with the field filled in.
         """
         value = super(PendulumDateTimeField, self).python_value(value)
@@ -89,7 +90,7 @@ class PendulumDateTimeField(DateTimeField):
 
     def db_value(self, value):
         """Convert the Pendulum instance to a datetime for saving in the db."""
-        if isinstance(value, pendulum.Pendulum):
+        if isinstance(value, DateTime):
             value = datetime.datetime(
                 value.year, value.month, value.day, value.hour, value.minute,
                 value.second, value.microsecond, value.tzinfo

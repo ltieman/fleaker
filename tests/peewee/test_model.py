@@ -3,7 +3,6 @@
 import peewee
 import pytest
 
-from playhouse.fields import PasswordField
 from playhouse.signals import post_save, pre_save
 
 from fleaker._compat import exception_message
@@ -16,7 +15,6 @@ def user_model(database):
     """Fixture that provides a simple User model."""
     class User(Model):
         email = peewee.CharField(max_length=100, null=False, unique=True)
-        password = PasswordField(null=False, iterations=4)
         active = peewee.BooleanField(null=False, default=True)
 
         @classmethod
@@ -61,8 +59,6 @@ def test_create_model(user_model):
 
     # Make sure data checks out.
     assert queried_user.email == 'john.doe@example.com'
-    assert queried_user.password != password
-    assert queried_user.password.check_password('password')
 
 
 def test_update_model(user_model):
@@ -81,7 +77,6 @@ def test_update_model(user_model):
     fresh_user = user_model.get_by_id(user.id)
 
     assert fresh_user.email == data['email']
-    assert fresh_user.password.check_password(data['password'])
 
     # Make sure that only fields on the model can be updated
     with pytest.raises(AttributeError):

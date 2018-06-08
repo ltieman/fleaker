@@ -402,7 +402,7 @@ class EventMixin(SignalModel):
             fleaker.peewee.EventMixin:
                 The original instance of the model.
         """
-        pk_value = self._get_pk_value()
+        pk_value = self.get_id()
 
         if isinstance(pk_value, int) and not self._original:
             self._original = (
@@ -615,8 +615,8 @@ class EventMixin(SignalModel):
             event (Event): The Event instance to attach the data to
             instance (fleaker.db.Model): The newly created/updated model
         """
-        event.updated = self._data
-        event.original = self.get_original()._data
+        event.updated = self.__data__
+        event.original = self.get_original().__data__
 
 
 @pre_save(sender=EventMixin)

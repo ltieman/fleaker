@@ -83,7 +83,10 @@ class CreatedMixin(SignalModel):
                 compatible with the current class's datetime library.
         """
         if not self._cached_time:
-            self._cached_time = self._meta.datetime.utcnow()
+            if hasattr(self._meta.datetime, 'utcnow'):
+                self._cached_time = self._meta.datetime.utcnow()
+            elif hasattr(self._meta.datetime, 'now'):
+                self._cached_time = self._meta.datetime.now('UTC')
 
         return self._cached_time
 

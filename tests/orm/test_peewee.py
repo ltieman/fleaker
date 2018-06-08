@@ -206,11 +206,11 @@ def test_orm_peewee_per_request_connections():
     assert isinstance(fleaker.db._get_current_object(), flask_utils.FlaskDB)
     assert isinstance(fleaker.db.database.obj, peewee.SqliteDatabase)
 
-    assert not fleaker.db.database._local.conn
+    assert not fleaker.db.database._state.conn
 
     with app.test_client() as client:
         rv = client.get('/')
-        assert fleaker.db.database._local.conn
+        assert fleaker.db.database._state.conn
 
 
 def test_orm_peewee_creation_with_explicit_db():

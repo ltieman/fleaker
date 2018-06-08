@@ -4,6 +4,7 @@
 import pytest
 
 pendulum = pytest.importorskip('pendulum')
+pendulum_dt = pytest.importorskip('pendulum.datetime')
 
 from marshmallow import ValidationError
 
@@ -18,18 +19,18 @@ class PendulumSchema(Schema):
 def test_pendulum_field_loads():
     """Ensure that the PendulumField can deserialize data."""
     schema = PendulumSchema()
-    now = pendulum.utcnow()
+    now = pendulum.now('UTC')
     payload = {'time': text_type(now)}
     serialized = schema.load(payload).data
 
-    assert isinstance(serialized['time'], pendulum.Pendulum)
+    assert isinstance(serialized['time'], pendulum_dt.DateTime)
     assert serialized['time'] == now
 
 
 def test_pendulum_field_dumps():
     """Ensure that the PendulumField can serialize data."""
     schema = PendulumSchema()
-    now = pendulum.utcnow()
+    now = pendulum.now('UTC')
     payload = {'time': now}
     serialized = schema.dump(payload).data
 
@@ -52,7 +53,7 @@ def test_pendulum_field_timezone_validation():
 def test_pendulum_field_does_not_convert_when_told_not_to_like_a_good_boy():
     """Ensure that PendulumField won't convert dates when told not to."""
     schema = PendulumSchema(context={'convert_dates': False})
-    now = pendulum.utcnow()
+    now = pendulum.now('UTC')
     payload = {'time': text_type(now)}
     serialized = schema.load(payload).data
 

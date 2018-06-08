@@ -6,6 +6,7 @@ import arrow
 import peewee
 import pendulum
 import pytest
+from pendulum.datetime import DateTime
 
 from fleaker.peewee.fields import ArrowDateTimeField, PendulumDateTimeField
 from fleaker.peewee.mixins import (
@@ -19,7 +20,7 @@ from fleaker.peewee.mixins import (
 @pytest.mark.parametrize('Mixin,dt', (
     (CreatedMixin, datetime.datetime),
     (ArrowCreatedMixin, arrow.Arrow),
-    (PendulumCreatedMixin, pendulum.Pendulum),
+    (PendulumCreatedMixin, DateTime),
 ))
 def test_created_time_mixins(database, Mixin, dt):
     """Ensure that created time mixins work as expected."""
@@ -39,7 +40,7 @@ def test_created_time_mixins(database, Mixin, dt):
 @pytest.mark.parametrize('Mixin,dt', (
     (CreatedModifiedMixin, datetime.datetime),
     (ArrowCreatedModifiedMixin, arrow.Arrow),
-    (PendulumCreatedModifiedMixin, pendulum.Pendulum),
+    (PendulumCreatedModifiedMixin, DateTime),
 ))
 def test_created_modified_time_mixins(database, Mixin, dt):
     """Ensure that created and modified time mixins work as expected."""
@@ -67,7 +68,7 @@ def test_created_modified_time_mixins(database, Mixin, dt):
 @pytest.mark.parametrize('Mixin,dt', (
     (ArchivedMixin, datetime.datetime),
     (ArrowArchivedMixin, arrow.Arrow),
-    (PendulumArchivedMixin, pendulum.Pendulum),
+    (PendulumArchivedMixin, DateTime),
 ))
 def test_archived_time_mixins(database, Mixin, dt):
     """Ensure that archived time mixins work as expected."""
@@ -114,7 +115,7 @@ def test_archived_time_mixins(database, Mixin, dt):
 @pytest.mark.parametrize('Mixin,dt', (
     (CreatedMixin, datetime.datetime),
     (ArrowCreatedMixin, arrow.Arrow),
-    (PendulumCreatedMixin, pendulum.Pendulum),
+    (PendulumCreatedMixin, DateTime),
 ))
 def test_timestamp_returned_properly(database, Mixin, dt):
     """Ensure that all time mixins return the right value from the DB."""
@@ -134,7 +135,7 @@ def test_timestamp_returned_properly(database, Mixin, dt):
 
 @pytest.mark.parametrize('dt,Field', (
     (arrow.Arrow, ArrowDateTimeField),
-    (pendulum.Pendulum, PendulumDateTimeField)
+    (DateTime, PendulumDateTimeField)
 ))
 def test_time_python_value(database, dt, Field):
     """Ensure that the Python value is correctly handled for time fields."""

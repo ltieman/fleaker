@@ -21,12 +21,10 @@ Example:
         import peewee
 
         from fleaker.peewee import Model
-        from playhouse.fields import PasswordField
         from playhouse.signals import post_save, pre_save
 
         class User(Model):
             email = peewee.CharField(max_length=100, null=False, unique=True)
-            password = PasswordField(null=False, iterations=4)
             active = peewee.BooleanField(null=False, default=True)
 
             class Meta:
