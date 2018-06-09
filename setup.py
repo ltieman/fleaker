@@ -109,7 +109,7 @@ def install():
             'Operating System :: OS Independent',
             'Programming Language :: Python',
             # @TODO: Pick specific Python versions; out of the gate flask does 2.6,
-            # 2.7, 3.3, 3.4, and 3.5
+            # 2.7, 3.4, 3.5, and 3.6
             'Programming Language :: Python :: 2',
             'Programming Language :: Python :: 3',
             'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
